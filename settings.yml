@@ -1,4 +1,8 @@
-example_setting:
-  default: true
-  description:
-    en: A description of a setting.
+svg_icon_subset:
+  default: "receipt"
+
+sticky_map_position:
+  default: "bottom"
+  choices:
+    - "top"
+    - "bottom"

@@ -1,0 +1,53 @@
+.topic-map {
+  display: none;
+}
+
+.sticky-topic-map {
+  @if $sticky-map-position == "top" {
+    position: fixed;
+    top: var(--header-offset);
+    z-index: 9;
+    width: calc(
+      var(--topic-avatar-width) +
+        var(--topic-body-width) +
+        (var(--topic-body-width-padding) * 2)
+    );
+    box-shadow: var(--shadow-header);
+  }
+
+  @if $sticky-map-position == "bottom" {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    max-width: calc(
+      var(--topic-avatar-width) +
+        var(--topic-body-width) +
+        (var(--topic-body-width-padding) * 2)
+    );
+    box-shadow: var(--shadow-composer);
+  }
+
+  .topic-map {
+    display: block;
+    margin: 0;
+  }
+}
+
+.header-title {
+  display: flex;
+}
+
+.header-topic-title-suffix {
+  display: inline-block;
+}
+
+.sticky-topic-map-toggle {
+  margin-left: 0.5em;
+  font-size: var(--font-down-4);
+  position: relative;
+  top: -0.15em;
+}
+
+section.map .btn:focus {
+  background: var(--primary-200);
+}
