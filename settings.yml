@@ -1,8 +1,13 @@
 svg_icon_subset:
   default: "receipt"
 
-sticky_map_position:
-  default: "bottom"
+topic_map_type:
+  default: "sticky top"
+  type: enum
   choices:
-    - "top"
-    - "bottom"
+    - "sticky top"
+    - "sticky bottom"
+    - "static bottom"
+
+simplified_map:
+  default: true

@@ -8,6 +8,9 @@ export default class HeaderTitleStateClass extends Component {
 
   @action
   disableStickyMap() {
+    if (settings.topic_map_type !== "sticky top") {
+      return;
+    }
     if (
       this.stickyMapState.currentPost === 1 &&
       this.args.outletArgs.minimized === false

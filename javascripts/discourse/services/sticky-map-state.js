@@ -3,7 +3,8 @@ import { action } from "@ember/object";
 import Service from "@ember/service";
 
 export default class StickyMapState extends Service {
-  @tracked stickyMapVisible = false;
+  @tracked
+  stickyMapVisible = settings.topic_map_type === "static bottom" ? true : false;
   @tracked currentPost = null;
 
   updateCurrentPost(post) {
@@ -12,13 +13,20 @@ export default class StickyMapState extends Service {
 
   @action
   toggleStickyMap() {
+    if (settings.topic_map_type === "static bottom") {
+      return;
+    }
+
     this.stickyMapVisible = !this.stickyMapVisible;
 
     if (this.stickyMapVisible) {
       // not a long term solution
       // but moves focus for now
+
+      const mapBtn = document.querySelector(".sticky-topic-map .btn");
+
       setTimeout(function () {
-        document.querySelector(".sticky-topic-map .btn").focus();
+        mapBtn?.focus();
       }, 100);
     }
   }
