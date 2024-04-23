@@ -170,6 +170,10 @@ section.map .btn:focus {
       top: 0.5em;
     }
 
+    @if $topic-map-type == "static bottom" {
+      top: 0.6em;
+    }
+
     .topic-strategy-summarization {
       .d-icon {
         color: var(--secondary);
