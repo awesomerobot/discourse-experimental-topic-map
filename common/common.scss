@@ -57,6 +57,9 @@
         top: unset !important;
         bottom: 0.6em;
       }
+      h3 {
+        padding: 0.25em 0 0.5em !important;
+      }
     }
   }
 
@@ -104,11 +107,6 @@ section.map .btn:focus {
   background: var(--secondary);
   border: none;
   border-bottom: 1px solid var(--primary-low);
-
-  @if $topic-map-type == "sticky bottom" {
-    padding-top: 1em;
-    padding-bottom: 0.75em;
-  }
 
   @if $topic-map-type == "static bottom" {
     border-top: 1px solid var(--primary-low);
