@@ -47,6 +47,17 @@
     &.is-sticky {
       box-shadow: var(--shadow-composer);
     }
+
+    .topic-map.--simplified {
+      .map {
+        display: flex;
+        flex-direction: column-reverse;
+      }
+      .summarization-buttons {
+        top: unset;
+        bottom: 0.6em;
+      }
+    }
   }
 
   .topic-map {
@@ -122,6 +133,7 @@ section.map .btn:focus {
       padding-top: 1em;
       padding-bottom: 1em;
       margin: 0;
+      z-index: 2;
     }
   }
 
