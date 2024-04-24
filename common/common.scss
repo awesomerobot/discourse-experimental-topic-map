@@ -105,6 +105,65 @@ section.map .btn:focus {
 
   section {
     border: none;
+    padding: 0.5em 0.75em 1em 0.5em;
+    h3 {
+      font-size: var(--font-up-1);
+      margin-bottom: 1em;
+    }
+  }
+
+  .secondary {
+    &.--active {
+      background: var(--tertiary-low);
+    }
+  }
+
+  section.likes {
+    ul {
+      margin: 0;
+      padding: 0;
+    }
+    li {
+      padding: 0;
+      width: 100%;
+    }
+
+    li > a {
+      display: grid;
+      grid-template-areas: "likes post";
+      grid-template-columns: 5em 1fr;
+      border-top: 1px solid var(--primary-low);
+      gap: 0.25em;
+    }
+
+    .like-section__user {
+      grid-area: user;
+      display: none;
+      align-items: center;
+      color: var(--primary);
+      justify-content: start;
+    }
+
+    .like-section__likes {
+      grid-area: likes;
+      display: flex;
+      align-items: center;
+      gap: 0.25em;
+      color: var(--primary-medium);
+      justify-content: start;
+      font-size: var(--font-up-2);
+      .d-icon {
+        font-size: var(--font-down-1);
+        color: var(--love);
+      }
+    }
+
+    p {
+      grid-area: post;
+      display: flex;
+      justify-content: start;
+      color: var(--primary-high);
+    }
   }
 
   .created-at,

@@ -7,8 +7,18 @@ export default class StickyMapState extends Service {
   stickyMapVisible = settings.topic_map_type === "static bottom" ? true : false;
   @tracked currentPost = null;
 
+  @tracked currentTab = null;
+
   updateCurrentPost(post) {
     return (this.currentPost = post);
+  }
+
+  updateCurrentTab(tab) {
+    if (tab === this.currentTab) {
+      return (this.currentTab = null);
+    }
+
+    return (this.currentTab = tab);
   }
 
   @action

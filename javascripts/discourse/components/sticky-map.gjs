@@ -5,8 +5,8 @@ import didUpdate from "@ember/render-modifiers/modifiers/did-update";
 import { inject as service } from "@ember/service";
 import SummaryBox from "discourse/components/summary-box";
 import TopicMap from "discourse/components/topic-map";
-import TopicMapSummary from "discourse/components/topic-map/topic-map-summary";
 import or from "truth-helpers/helpers/or";
+import SimpleTopicMapSummary from "../components/simple-topic-map-summary";
 
 export default class StickyMap extends Component {
   @service currentUser;
@@ -79,6 +79,35 @@ export default class StickyMap extends Component {
 
     this.observer.observe(el);
   }
+
+  @action
+  observeSummaryClick(element) {
+    const handleClick = (event) => {
+      const button = event.target.closest("button");
+
+      if (button && button.closest(".summarization-buttons")) {
+        this.stickyMapState.updateCurrentTab(null);
+      }
+
+      if (event.target.closest(".secondary")) {
+        this.collapseSummary();
+      }
+    };
+
+    element.addEventListener("click", handleClick, true);
+
+    this.cleanup = () => {
+      element.removeEventListener("click", handleClick, true);
+    };
+  }
+
+  willDestroy() {
+    super.willDestroy();
+    if (this.cleanup) {
+      this.cleanup();
+    }
+  }
+
   <template>
     {{#if this.stickyMapState.stickyMapVisible}}
       {{#unless @outletArgs.model.postStream.loadingFilter}}
@@ -92,9 +121,12 @@ export default class StickyMap extends Component {
         >
 
           {{#if this.simplifiedMap}}
-            <div class="topic-map --simplified">
+            <div
+              class="topic-map --simplified"
+              {{didInsert this.observeSummaryClick}}
+            >
               <div class="map">
-                <TopicMapSummary
+                <SimpleTopicMapSummary
                   @topic={{@outletArgs.model}}
                   @topicDetails={{this.topicDetails}}
                   @collapsed={{true}}
