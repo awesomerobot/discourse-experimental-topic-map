@@ -111,12 +111,17 @@ section.map .btn:focus {
 
   section {
     border: none;
-    padding: 0.5em 0.75em 1em 0.5em;
-    max-height: calc(100vh - var(--header-offset) - 10em);
+    padding: 0 0.75em 1em 0.5em;
+    max-height: 40vh
     overflow: auto;
     h3 {
+      position: sticky;
+      top: 0;
+      background: var(--secondary);
       font-size: var(--font-up-1);
-      margin: 0.5em 0 1em 0;
+      padding-top: 1em;
+      padding-bottom: 1em;
+      margin: 0;
     }
   }
 
