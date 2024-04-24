@@ -103,6 +103,12 @@ section.map .btn:focus {
     border-top: 1px solid var(--primary-low);
   }
 
+  &:not(:has(.summarization-buttons)) {
+    .avatars {
+      margin-right: auto;
+    }
+  }
+
   section {
     border: none;
     padding: 0.5em 0.75em 1em 0.5em;
