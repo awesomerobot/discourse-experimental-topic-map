@@ -107,10 +107,6 @@ section.map .btn:focus {
     .avatars {
       margin-left: auto;
     }
-
-    ul {
-      flex-direction: row;
-    }
   }
 
   section {
@@ -118,7 +114,7 @@ section.map .btn:focus {
     padding: 0.5em 0.75em 1em 0.5em;
     h3 {
       font-size: var(--font-up-1);
-      margin-bottom: 1em;
+      margin: 0.5em 0 1em 0;
     }
   }
 
@@ -195,7 +191,7 @@ section.map .btn:focus {
   }
 
   .map > ul {
-    flex-direction: row-reverse;
+    flex-direction: row;
     .likes,
     .links,
     .users {
@@ -246,7 +242,7 @@ section.map .btn:focus {
 
   .summarization-buttons {
     position: absolute;
-    left: 0.5em;
+    right: 0.5em;
     top: 1.5em;
 
     @if $topic-map-type == "sticky top" {
