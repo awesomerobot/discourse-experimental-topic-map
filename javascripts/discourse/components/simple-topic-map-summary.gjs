@@ -43,6 +43,10 @@ export default class SimpleTopicMapSummary extends Component {
     return this.args.topicDetails.last_poster?.username;
   }
 
+  get linksToShow() {
+    return this.args.topicDetails.links;
+  }
+
   get toggleMapButton() {
     return {
       title: this.args.collapsed
