@@ -50,11 +50,11 @@
 
     .topic-map.--simplified {
       .map {
-        display: flex;
+        display: flex !important;
         flex-direction: column-reverse;
       }
       .summarization-buttons {
-        top: unset;
+        top: unset !important;
         bottom: 0.6em;
       }
     }
