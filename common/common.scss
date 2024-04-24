@@ -105,7 +105,11 @@ section.map .btn:focus {
 
   &:not(:has(.summarization-buttons)) {
     .avatars {
-      margin-right: auto;
+      margin-left: auto;
+    }
+
+    ul {
+      flex-direction: row;
     }
   }
 
@@ -192,6 +196,19 @@ section.map .btn:focus {
 
   .map > ul {
     flex-direction: row-reverse;
+    .likes,
+    .links,
+    .users {
+      &:not(.--active) {
+        &:hover {
+          background: var(--primary-very-low);
+        }
+      }
+      cursor: pointer;
+      .number {
+        color: var(--tertiary);
+      }
+    }
   }
 
   .map:first-of-type {
