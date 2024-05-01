@@ -64,6 +64,9 @@ article .topic-map {
     top: -0.5rem;
     z-index: 2;
   }
+  a {
+    overflow-wrap: anywhere;
+  }
 }
 
 [data-identifier="map-users"] {
