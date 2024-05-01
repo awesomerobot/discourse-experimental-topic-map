@@ -10,7 +10,7 @@ article .topic-map {
   );
 
   @media screen and (min-width: 925px) {
-    @media screen and (min-height: 1000px) {
+    @media screen and (min-height: 900px) {
       // no sticky on short screens
       &.--sticky {
         position: sticky;
