@@ -221,7 +221,7 @@ article .topic-map {
 
     p {
       grid-area: post;
-
+      overflow-wrap: anywhere;
       color: var(--primary-high);
       text-align: left;
     }
