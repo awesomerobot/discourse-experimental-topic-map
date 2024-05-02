@@ -330,6 +330,14 @@ article .topic-map {
   .map > ul {
     flex-direction: row;
     gap: 1em;
+    .fk-d-tooltip__trigger {
+      &:hover {
+        .number,
+        .presentation {
+          color: var(--tertiary);
+        }
+      }
+    }
   }
 
   .map:first-of-type {
