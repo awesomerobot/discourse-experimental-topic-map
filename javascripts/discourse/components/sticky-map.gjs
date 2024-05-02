@@ -1,4 +1,5 @@
 import Component from "@glimmer/component";
+import { tracked } from "@glimmer/tracking";
 import { action } from "@ember/object";
 import didInsert from "@ember/render-modifiers/modifiers/did-insert";
 import { inject as service } from "@ember/service";
@@ -9,17 +10,20 @@ export default class StickyMap extends Component {
   @service currentUser;
   @service stickyMapState;
 
+  @tracked isOP = this.args.outletArgs.isOP ? true : false;
+
   observer = null;
 
   get topicDetails() {
     return this.args.outletArgs.model.get("details");
   }
 
-  get shouldStick() {
-    return (
-      this.args.outletArgs.model.posts_count > 3 &&
-      this.stickyMapState.stickyMap
-    );
+  get shouldShow() {
+    if (this.isOP) {
+      return true;
+    }
+
+    return this.args.outletArgs.model.posts_count > 10;
   }
 
   @bind
@@ -63,27 +67,26 @@ export default class StickyMap extends Component {
 
   willDestroy() {
     super.willDestroy();
-    this.observer.disconnect();
+    this.observer?.disconnect();
   }
 
   <template>
-    {{#unless @outletArgs.model.postStream.loadingFilter}}
-      <div
-        class="sticky-topic-map {{if this.shouldStick '--sticky'}}"
-        {{didInsert this.observeStickyMap}}
-      >
-        <div class="topic-map --simplified">
-          <div class="map">
-            <SimpleTopicMapSummary
-              @topic={{@outletArgs.model}}
-              @topicDetails={{this.topicDetails}}
-              @collapsed={{true}}
-              @showSummary={{this.showSummary}}
-              @collapseSummary={{this.collapseSummary}}
-            />
+    {{#if this.shouldShow}}
+      {{#unless @outletArgs.model.postStream.loadingFilter}}
+        <div class="sticky-topic-map" {{didInsert this.observeStickyMap}}>
+          <div class="topic-map --simplified">
+            <div class="map">
+              <SimpleTopicMapSummary
+                @topic={{@outletArgs.model}}
+                @topicDetails={{this.topicDetails}}
+                @collapsed={{true}}
+                @showSummary={{this.showSummary}}
+                @collapseSummary={{this.collapseSummary}}
+              />
+            </div>
           </div>
         </div>
-      </div>
-    {{/unless}}
+      {{/unless}}
+    {{/if}}
   </template>
 }

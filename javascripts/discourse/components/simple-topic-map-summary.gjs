@@ -20,12 +20,14 @@ import { emojiUnescape } from "discourse/lib/text";
 import dIcon from "discourse-common/helpers/d-icon";
 import i18n from "discourse-common/helpers/i18n";
 import { avatarImg } from "discourse-common/lib/avatar-utils";
+import I18n from "discourse-i18n";
 import DTooltip from "float-kit/components/d-tooltip";
 import and from "truth-helpers/helpers/and";
 import lt from "truth-helpers/helpers/lt";
 import not from "truth-helpers/helpers/not";
 
 const TRUNCATED_LINKS_LIMIT = 5;
+const MIN_POST_READ_TIME = 4;
 
 export default class SimpleTopicMapSummary extends Component {
   @service siteSettings;
@@ -116,6 +118,55 @@ export default class SimpleTopicMapSummary extends Component {
     );
   }
 
+  get topRepliesSummaryEnabled() {
+    return this.args.topic.postStream.summary;
+  }
+
+  get topRepliesSummaryInfo() {
+    if (this.topRepliesSummaryEnabled) {
+      return I18n.t("summary.enabled_description");
+    }
+
+    const wordCount = this.args.topic.word_count;
+    if (wordCount && this.siteSettings.read_time_word_count > 0) {
+      const readingTime = Math.ceil(
+        Math.max(
+          wordCount / this.siteSettings.read_time_word_count,
+          (this.args.topic.posts_count * MIN_POST_READ_TIME) / 60
+        )
+      );
+      return I18n.messageFormat("summary.description_time_MF", {
+        replyCount: this.args.topic.replyCount,
+        readingTime,
+      });
+    }
+    return I18n.t("summary.description", {
+      count: this.args.topic.replyCount,
+    });
+  }
+
+  get topRepliesTitle() {
+    if (this.topRepliesSummaryEnabled) {
+      return;
+    }
+
+    return I18n.t("summary.short_title");
+  }
+
+  get topRepliesLabel() {
+    const label = this.topRepliesSummaryEnabled ? "All Replies" : "Top Replies";
+
+    return label;
+  }
+
+  get topRepliesIcon() {
+    if (this.topRepliesSummaryEnabled) {
+      return;
+    }
+
+    return "layer-group";
+  }
+
   @action
   fetchMostLiked() {
     this.loading = true;
@@ -138,12 +189,13 @@ export default class SimpleTopicMapSummary extends Component {
 
   @action
   cancelFilter() {
-    return this.args.outletArgs.model.postStream.cancelFilter();
+    this.args.topic.postStream.cancelFilter();
+    return this.args.topic.postStream.refresh();
   }
 
   @action
   showTopReplies() {
-    return this.args.outletArgs.model.postStream.showTopReplies();
+    return this.args.topic.postStream.showTopReplies();
   }
 
   <template>
@@ -346,6 +398,13 @@ export default class SimpleTopicMapSummary extends Component {
         </li>
       {{/if}}
       <div class="map-buttons">
+        <div class="estimated-read-time">
+          <span> read time </span>
+          <span>
+            ~{{this.readTime}}
+            min
+          </span>
+        </div>
         <div class="summarization-buttons">
           {{#if @topic.summarizable}}
             <DTooltip
@@ -367,56 +426,58 @@ export default class SimpleTopicMapSummary extends Component {
                   @translatedTitle={{this.generateSummaryTitle}}
                   @icon={{this.generateSummaryIcon}}
                   @disabled={{this.summary.loading}}
-                  class="btn-primary topic-strategy-summarization"
+                  class="btn-default topic-strategy-summarization"
                 />
               </:trigger>
               <:content>
-                <div class="topic-map toggle-summary">
+                <div class="topic-map">
+                  <div class="toggle-summary">
 
-                  {{#if @topic.has_summary}}
-                    <p>{{htmlSafe this.topRepliesSummaryInfo}}</p>
-                  {{/if}}
+                    {{#if @topic.has_summary}}
+                      <p>{{htmlSafe this.topRepliesSummaryInfo}}</p>
+                    {{/if}}
 
-                  {{#if this.summary.showSummaryBox}}
-                    <article class="summary-box">
-                      {{#if (not this.summary.text)}}
-                        <AiSummarySkeleton />
-                      {{else}}
-                        <div
-                          class="generated-summary"
-                        >{{this.summary.text}}</div>
+                    {{#if this.summary.showSummaryBox}}
+                      <article class="summary-box">
+                        {{#if (not this.summary.text)}}
+                          <AiSummarySkeleton />
+                        {{else}}
+                          <div
+                            class="generated-summary"
+                          >{{this.summary.text}}</div>
 
-                        {{#if this.summary.summarizedOn}}
-                          <div class="summarized-on">
-                            <p>
-                              {{i18n
-                                "summary.summarized_on"
-                                date=this.summary.summarizedOn
-                              }}
+                          {{#if this.summary.summarizedOn}}
+                            <div class="summarized-on">
+                              <p>
+                                {{i18n
+                                  "summary.summarized_on"
+                                  date=this.summary.summarizedOn
+                                }}
 
-                              <DTooltip @placements={{array "top-end"}}>
-                                <:trigger>
-                                  {{dIcon "info-circle"}}
-                                </:trigger>
-                                <:content>
-                                  {{i18n
-                                    "summary.model_used"
-                                    model=this.summary.summarizedBy
-                                  }}
-                                </:content>
-                              </DTooltip>
-                            </p>
-
-                            {{#if this.summary.outdated}}
-                              <p class="outdated-summary">
-                                {{this.outdatedSummaryWarningText}}
+                                <DTooltip @placements={{array "top-end"}}>
+                                  <:trigger>
+                                    {{dIcon "info-circle"}}
+                                  </:trigger>
+                                  <:content>
+                                    {{i18n
+                                      "summary.model_used"
+                                      model=this.summary.summarizedBy
+                                    }}
+                                  </:content>
+                                </DTooltip>
                               </p>
-                            {{/if}}
-                          </div>
+
+                              {{#if this.summary.outdated}}
+                                <p class="outdated-summary">
+                                  {{this.outdatedSummaryWarningText}}
+                                </p>
+                              {{/if}}
+                            </div>
+                          {{/if}}
                         {{/if}}
-                      {{/if}}
-                    </article>
-                  {{/if}}
+                      </article>
+                    {{/if}}
+                  </div>
                 </div>
               </:content>
 
@@ -424,9 +485,10 @@ export default class SimpleTopicMapSummary extends Component {
 
           {{/if}}
           {{#if @topic.has_summary}}
+
             <DButton
               @action={{if
-                @outletArgs.model.postStream.summary
+                @topic.postStream.summary
                 this.cancelFilter
                 this.showTopReplies
               }}

@@ -3,26 +3,22 @@ article .topic-map {
   display: none;
 }
 
+.topic-map__op {
+  .topic-map.--simplified {
+    border-top: 1px solid var(--primary-low);
+    border-bottom: none;
+  }
+}
+
 .sticky-topic-map {
   max-width: calc(
     var(--topic-avatar-width) + var(--topic-body-width) +
       (var(--topic-body-width-padding) * 2)
   );
 
-  @media screen and (min-width: 925px) {
-    @media screen and (min-height: 900px) {
-      // no sticky on short screens
-      &.--sticky {
-        position: sticky;
-        bottom: 0;
-        z-index: 300;
-      }
-    }
-  }
-
   .topic-map {
     margin: 0;
-    padding: 0.5em 0;
+    padding: 0.5em 0.5em 0.5em 0.65em;
     box-sizing: border-box;
 
     .map {
@@ -36,6 +32,14 @@ article .topic-map {
         display: none;
       }
     }
+
+    .has-sidebar-page & {
+      @media screen and (max-width: 950px) {
+        li.avatars {
+          display: none;
+        }
+      }
+    }
   }
 }
 
@@ -43,6 +47,7 @@ article .topic-map {
   margin-left: auto;
   display: flex;
   align-items: center;
+  gap: 0.5em;
 }
 
 .map {
@@ -103,6 +108,12 @@ article .topic-map {
   }
 }
 
+.secondary.views {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 .estimated-read-time {
   display: flex;
   flex-direction: column-reverse;
@@ -114,9 +125,17 @@ article .topic-map {
     color: var(--primary-medium);
     font-size: var(--font-down-1);
   }
+
+  @media screen and (max-width: 475px) {
+    display: none;
+  }
 }
 
 [data-identifier="map-summary"] {
+  .topic-map {
+    width: 100%;
+  }
+
   .fk-d-tooltip__trigger-container {
     display: flex;
     flex-direction: row;
@@ -124,7 +143,6 @@ article .topic-map {
   }
 
   .fk-d-tooltip__inner-content {
-    min-height: 300px;
     max-height: 500px;
     width: 350px;
     overflow: auto;
@@ -329,9 +347,15 @@ article .topic-map {
       }
     }
 
+    .top-replies,
     .topic-strategy-summarization {
-      .d-icon {
-        color: var(--secondary);
+      .discourse-no-touch & {
+        &:focus,
+        &:hover {
+          .d-icon {
+            color: var(--primary-low);
+          }
+        }
       }
     }
   }
