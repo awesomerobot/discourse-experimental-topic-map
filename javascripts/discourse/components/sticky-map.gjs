@@ -19,11 +19,11 @@ export default class StickyMap extends Component {
   }
 
   get shouldShow() {
-    if (this.isOP) {
+    if (this.isOP && this.args.outletArgs.model.posts_count > 5) {
+      return true;
+    } else if (!this.isOP) {
       return true;
     }
-
-    return this.args.outletArgs.model.posts_count > 10;
   }
 
   @bind
