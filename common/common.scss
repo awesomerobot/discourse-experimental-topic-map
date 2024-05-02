@@ -34,7 +34,7 @@ article .topic-map {
     }
 
     .has-sidebar-page & {
-      @media screen and (max-width: 950px) {
+      @media screen and (max-width: 1000px) {
         li.avatars {
           display: none;
         }
