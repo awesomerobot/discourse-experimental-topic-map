@@ -414,13 +414,6 @@ export default class SimpleTopicMapSummary extends Component {
               @triggers="click"
             >
               <:trigger>
-                <div class="estimated-read-time">
-                  <span> read time </span>
-                  <span>
-                    ~{{this.readTime}}
-                    min
-                  </span>
-                </div>
                 <DButton
                   @translatedLabel={{this.generateSummaryTitle}}
                   @translatedTitle={{this.generateSummaryTitle}}
