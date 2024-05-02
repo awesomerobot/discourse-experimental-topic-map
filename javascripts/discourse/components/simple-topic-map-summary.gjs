@@ -425,11 +425,6 @@ export default class SimpleTopicMapSummary extends Component {
               <:content>
                 <div class="topic-map">
                   <div class="toggle-summary">
-
-                    {{#if @topic.has_summary}}
-                      <p>{{htmlSafe this.topRepliesSummaryInfo}}</p>
-                    {{/if}}
-
                     {{#if this.summary.showSummaryBox}}
                       <article class="summary-box">
                         {{#if (not this.summary.text)}}

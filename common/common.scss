@@ -62,11 +62,11 @@ article .topic-map {
 [data-identifier="map-likes"],
 [data-identifier="map-links"] {
   h3 {
-    margin-top: -0.5rem;
+    margin-top: -1.5rem;
     background: var(--secondary);
     position: sticky;
     padding: 0.5rem 0 0.25rem;
-    top: -0.5rem;
+    top: -1.5rem;
     z-index: 2;
   }
   a {
@@ -89,6 +89,7 @@ article .topic-map {
     overflow: auto;
     align-items: start;
     overscroll-behavior: contain;
+    padding: 1.5em;
   }
 
   tbody {
@@ -134,6 +135,9 @@ article .topic-map {
 [data-identifier="map-summary"] {
   .topic-map {
     width: 100%;
+    margin: 0;
+    background: transparent;
+    border: none;
   }
 
   .fk-d-tooltip__trigger-container {
@@ -148,10 +152,8 @@ article .topic-map {
     overflow: auto;
   }
 
-  .topic-map {
-    margin: 0;
-    background: transparent;
-    border: none;
+  .toggle-summary .summary-box {
+    margin-top: 0;
   }
 
   .generated-summary {
