@@ -18,8 +18,17 @@ article .topic-map {
 
   .topic-map {
     margin: 0;
-    padding: 0.5em 0.5em 0.5em 0.65em;
+    padding: 0.5em;
     box-sizing: border-box;
+
+    .map .number {
+      font-size: var(--font-up-1);
+      line-height: 1.2;
+    }
+
+    h4 {
+      margin: 0;
+    }
 
     .map {
       li {
@@ -27,14 +36,27 @@ article .topic-map {
         float: none;
       }
     }
-    @media screen and (max-width: 650px) {
+
+    li.avatars {
+      .avatar-flair,
+      .post-count {
+        display: none;
+      }
+
+      .avatar {
+        width: 2em;
+        height: 2em;
+      }
+    }
+
+    @media screen and (max-width: 600px) {
       li.avatars {
         display: none;
       }
     }
 
     .has-sidebar-page & {
-      @media screen and (max-width: 1100px) {
+      @media screen and (max-width: 1050px) {
         li.avatars {
           display: none;
         }
@@ -47,7 +69,7 @@ article .topic-map {
   margin-left: auto;
   display: flex;
   align-items: center;
-  gap: 0.5em;
+  gap: 0.75em;
 }
 
 .map {
@@ -88,11 +110,20 @@ article .topic-map {
 [data-identifier="map-users"],
 [data-identifier="map-summary"] {
   .fk-d-tooltip__inner-content {
+    box-sizing: border-box;
     max-height: 80dvh;
+    max-width: 95dvw;
+    min-width: 320px;
+    width: 100%;
     overflow: auto;
     align-items: start;
     overscroll-behavior: contain;
     padding: 1.5em;
+  }
+
+  section,
+  .loading-container {
+    width: 100%;
   }
 
   tbody {
@@ -116,6 +147,10 @@ article .topic-map {
   display: flex;
   flex-direction: column;
   align-items: center;
+  margin-top: 0.08em;
+  .number {
+    color: var(--primary-high) !important; // override core heatmapping
+  }
 }
 
 .estimated-read-time {
@@ -126,8 +161,8 @@ article .topic-map {
   color: var(--primary-high);
 
   span:first-child {
-    color: var(--primary-medium);
     font-size: var(--font-down-1);
+    color: var(--primary-medium);
   }
 
   @media screen and (max-width: 475px) {
@@ -362,11 +397,16 @@ article .topic-map {
 
     .top-replies,
     .topic-strategy-summarization {
-      .discourse-no-touch & {
-        &:focus,
-        &:hover {
-          .d-icon {
-            color: var(--primary-low);
+      .d-icon {
+        font-size: var(--font-up-1);
+      }
+      &:not([disabled]) {
+        .discourse-no-touch & {
+          &:focus,
+          &:hover {
+            .d-icon {
+              color: var(--primary-low);
+            }
           }
         }
       }

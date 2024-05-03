@@ -34,6 +34,8 @@ export default class SimpleTopicMapSummary extends Component {
 
   @tracked mostLikedPosts = [];
 
+  @tracked loading = true;
+
   get generateSummaryTitle() {
     const title = this.summary.canRegenerate ? "Resummarize" : "Summarize";
 
@@ -250,6 +252,7 @@ export default class SimpleTopicMapSummary extends Component {
           @identifier="map-likes"
           @interactive={{true}}
           @triggers="click"
+          @placement="right"
         >
           <:trigger>
             {{number @topic.like_count noTitle="true"}}
@@ -367,6 +370,7 @@ export default class SimpleTopicMapSummary extends Component {
           @interactive={{true}}
           @triggers="click"
           @inline={{true}}
+          @placement="right"
         >
           <:trigger>
             {{number @topic.participant_count noTitle="true"}}
@@ -399,9 +403,9 @@ export default class SimpleTopicMapSummary extends Component {
       {{/if}}
       <div class="map-buttons">
         <div class="estimated-read-time">
-          <span> read time </span>
+          <span> read </span>
           <span>
-            ~{{this.readTime}}
+            {{this.readTime}}
             min
           </span>
         </div>
@@ -410,7 +414,7 @@ export default class SimpleTopicMapSummary extends Component {
             <DTooltip
               @onShow={{@showSummary}}
               @identifier="map-summary"
-              @placement="top"
+              @placement="left"
               @triggers="click"
             >
               <:trigger>
