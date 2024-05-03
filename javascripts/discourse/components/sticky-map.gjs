@@ -19,6 +19,10 @@ export default class StickyMap extends Component {
   }
 
   get shouldShow() {
+    if (this.args.outletArgs.model.archetype === "private_message") {
+      return;
+    }
+
     if (this.isOP && this.args.outletArgs.model.posts_count > 4) {
       return true;
     } else if (!this.isOP) {
