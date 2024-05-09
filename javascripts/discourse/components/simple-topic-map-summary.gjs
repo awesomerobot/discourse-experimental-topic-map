@@ -21,7 +21,7 @@ import dIcon from "discourse-common/helpers/d-icon";
 import i18n from "discourse-common/helpers/i18n";
 import { avatarImg } from "discourse-common/lib/avatar-utils";
 import I18n from "discourse-i18n";
-import DTooltip from "float-kit/components/d-tooltip";
+import DMenu from "float-kit/components/d-menu";
 import and from "truth-helpers/helpers/and";
 import lt from "truth-helpers/helpers/lt";
 import not from "truth-helpers/helpers/not";
@@ -178,7 +178,9 @@ export default class SimpleTopicMapSummary extends Component {
       .then((data) => {
         data.posts.sort((a, b) => b.like_count - a.like_count);
 
-        this.mostLikedPosts = data.posts.slice(0, 5);
+        this.mostLikedPosts = data.posts
+          .filter((post) => post.post_number !== 1)
+          .slice(0, 3);
       })
       .catch((error) => {
         // eslint-disable-next-line no-console
@@ -244,14 +246,15 @@ export default class SimpleTopicMapSummary extends Component {
             "views_lowercase"
             count=@topic.views
           }}</h4>
-      </li>
+      </li>{{log @topic}}
 
-      {{#if (gt @topic.like_count 0)}}
-        <DTooltip
+      {{#if (and (gt @topic.like_count 0) (gt @topic.posts_count 2))}}
+        <DMenu
           @arrow={{true}}
           @identifier="map-likes"
           @interactive={{true}}
           @triggers="click"
+          @modalForMobile={{true}}
           @placement="right"
         >
           <:trigger>
@@ -263,7 +266,7 @@ export default class SimpleTopicMapSummary extends Component {
           </:trigger>
           <:content>
             <section class="likes" {{didInsert this.fetchMostLiked}}>
-              <h3>Most liked posts</h3>
+              <h3>Most liked replies</h3>
 
               <ConditionalLoadingSpinner @condition={{this.loading}}>
                 <ul>
@@ -295,16 +298,18 @@ export default class SimpleTopicMapSummary extends Component {
 
             </section>
           </:content>
-        </DTooltip>
+        </DMenu>
 
       {{/if}}
 
       {{#if (gt this.linksCount 0)}}
-        <DTooltip
+
+        <DMenu
           @arrow={{true}}
           @identifier="map-links"
           @interactive={{true}}
           @triggers="click"
+          @modalForMobile={{true}}
         >
           <:trigger>
 
@@ -361,16 +366,16 @@ export default class SimpleTopicMapSummary extends Component {
               {{/if}}
             </section>
           </:content>
-        </DTooltip>
+        </DMenu>
       {{/if}}
       {{#if (and (gt @topic.participant_count 5) this.shouldShowParticipants)}}
-        <DTooltip
+        <DMenu
           @arrow={{true}}
           @identifier="map-users"
           @interactive={{true}}
           @triggers="click"
-          @inline={{true}}
           @placement="right"
+          @modalForMobile={{true}}
         >
           <:trigger>
             {{number @topic.participant_count noTitle="true"}}
@@ -389,7 +394,7 @@ export default class SimpleTopicMapSummary extends Component {
             </section>
 
           </:content>
-        </DTooltip>
+        </DMenu>
 
       {{/if}}
 
@@ -411,11 +416,14 @@ export default class SimpleTopicMapSummary extends Component {
         </div>
         <div class="summarization-buttons">
           {{#if @topic.summarizable}}
-            <DTooltip
+            <DMenu
               @onShow={{@showSummary}}
+              @arrow={{true}}
               @identifier="map-summary"
-              @placement="left"
+              @interactive={{true}}
               @triggers="click"
+              @placement="left"
+              @modalForMobile={{true}}
             >
               <:trigger>
                 <DButton
@@ -430,6 +438,7 @@ export default class SimpleTopicMapSummary extends Component {
                 <div class="topic-map">
                   <div class="toggle-summary">
                     {{#if this.summary.showSummaryBox}}
+                      <h3>Topic Summary</h3>
                       <article class="summary-box">
                         {{#if (not this.summary.text)}}
                           <AiSummarySkeleton />
@@ -446,17 +455,6 @@ export default class SimpleTopicMapSummary extends Component {
                                   date=this.summary.summarizedOn
                                 }}
 
-                                <DTooltip @placements={{array "top-end"}}>
-                                  <:trigger>
-                                    {{dIcon "info-circle"}}
-                                  </:trigger>
-                                  <:content>
-                                    {{i18n
-                                      "summary.model_used"
-                                      model=this.summary.summarizedBy
-                                    }}
-                                  </:content>
-                                </DTooltip>
                               </p>
 
                               {{#if this.summary.outdated}}
@@ -473,7 +471,7 @@ export default class SimpleTopicMapSummary extends Component {
                 </div>
               </:content>
 
-            </DTooltip>
+            </DMenu>
 
           {{/if}}
           {{#if @topic.has_summary}}
