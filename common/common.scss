@@ -202,6 +202,11 @@ body:not(.archetype-private_message) {
     .fk-d-menu__inner-content {
       max-height: 500px;
       max-width: 90vw;
+
+      @media screen and (min-width: 400px) {
+        width: 400px;
+      }
+
       overflow: auto;
     }
 
