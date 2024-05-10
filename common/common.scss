@@ -17,6 +17,10 @@ body:not(.archetype-private_message) {
         (var(--topic-body-width-padding) * 2)
     );
 
+    @include breakpoint(mobile-large) {
+      font-size: var(--font-down-1);
+    }
+
     .topic-map {
       margin: 0;
       padding: 0.5em;
@@ -122,6 +126,10 @@ body:not(.archetype-private_message) {
       align-items: start;
       overscroll-behavior: contain;
       padding: 1.5em;
+      @include breakpoint(mobile-large) {
+        min-width: unset;
+        max-width: 90dvw;
+      }
     }
 
     section,
@@ -160,6 +168,9 @@ body:not(.archetype-private_message) {
       font-size: 1.07em; // need to fix
       h4 {
         font-size: var(--font-down-1);
+        @include breakpoint(mobile-large) {
+          letter-spacing: 0.2px;
+        }
       }
     }
   }
