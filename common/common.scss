@@ -466,3 +466,9 @@ body:not(.archetype-private_message) {
     }
   }
 }
+
+.gap {
+  // temporarily fixes missing divider between gap posts and map
+  border-top: 1px solid var(--primary-low);
+  padding-top: 0.5em;
+}

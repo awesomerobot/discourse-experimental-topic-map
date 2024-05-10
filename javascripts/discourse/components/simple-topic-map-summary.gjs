@@ -177,9 +177,8 @@ export default class SimpleTopicMapSummary extends Component {
     ajax(filter)
       .then((data) => {
         data.posts.sort((a, b) => b.like_count - a.like_count);
-
         this.mostLikedPosts = data.posts
-          .filter((post) => post.post_number !== 1)
+          .filter((post) => post.post_number !== 1 && post.like_count !== 0)
           .slice(0, 3);
       })
       .catch((error) => {
