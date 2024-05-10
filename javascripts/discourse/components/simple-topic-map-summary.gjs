@@ -1,6 +1,6 @@
 import Component from "@glimmer/component";
 import { tracked } from "@glimmer/tracking";
-import { array, hash } from "@ember/helper";
+import { hash } from "@ember/helper";
 import { action } from "@ember/object";
 import didInsert from "@ember/render-modifiers/modifiers/did-insert";
 import { inject as service } from "@ember/service";
@@ -256,6 +256,7 @@ export default class SimpleTopicMapSummary extends Component {
           @triggers="click"
           @modalForMobile={{true}}
           @placement="right"
+          @groupIdentifier="topic-map"
         >
           <:trigger>
             {{number @topic.like_count noTitle="true"}}
@@ -310,6 +311,7 @@ export default class SimpleTopicMapSummary extends Component {
           @interactive={{true}}
           @triggers="click"
           @modalForMobile={{true}}
+          @groupIdentifier="topic-map"
         >
           <:trigger>
 
@@ -376,6 +378,7 @@ export default class SimpleTopicMapSummary extends Component {
           @triggers="click"
           @placement="right"
           @modalForMobile={{true}}
+          @groupIdentifier="topic-map"
         >
           <:trigger>
             {{number @topic.participant_count noTitle="true"}}
@@ -424,6 +427,7 @@ export default class SimpleTopicMapSummary extends Component {
               @triggers="click"
               @placement="left"
               @modalForMobile={{true}}
+              @groupIdentifier="topic-map"
             >
               <:trigger>
                 <DButton
