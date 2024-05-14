@@ -1,4 +1,7 @@
 en:
   theme_metadata:
     description: ""
-  toggle: Summary
+  menu_titles:
+    replies: "Most liked replies"
+  read: read
+  minutes: min

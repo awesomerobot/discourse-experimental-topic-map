@@ -14,7 +14,7 @@ export default apiInitializer("1.20.0", (api) => {
         new RenderGlimmer(
           helper.widget,
           "div.topic-map__op",
-          hbs`<StickyMap @outletArgs={{@data}}/>`,
+          hbs`<RevampedTopicMap @outletArgs={{@data}}/>`,
           {
             model: model.topic,
             isOP: true,

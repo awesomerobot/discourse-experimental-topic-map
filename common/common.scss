@@ -11,7 +11,7 @@ body:not(.archetype-private_message) {
     }
   }
 
-  .sticky-topic-map {
+  .revamped-topic-map {
     max-width: calc(
       var(--topic-avatar-width) + var(--topic-body-width) +
         (var(--topic-body-width-padding) * 2)
@@ -22,9 +22,14 @@ body:not(.archetype-private_message) {
     }
 
     .topic-map {
-      margin: 0;
-      padding: 0.5em;
       box-sizing: border-box;
+      margin: 0;
+      padding: 0.5em 0.5em 0.5em
+        calc(var(--topic-body-width-padding) + var(--topic-avatar-width));
+
+      @media screen and (max-width: 500px) {
+        padding: 0.5em 0;
+      }
 
       .map .number {
         font-size: var(--font-up-1);
@@ -57,14 +62,6 @@ body:not(.archetype-private_message) {
       @media screen and (max-width: 600px) {
         li.avatars {
           display: none;
-        }
-      }
-
-      .has-sidebar-page & {
-        @media screen and (max-width: 1050px) {
-          li.avatars {
-            display: none;
-          }
         }
       }
     }
@@ -160,14 +157,12 @@ body:not(.archetype-private_message) {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-top: 0.14em; // need to fix this alignment
+    pointer-events: none;
     .number {
       color: var(--primary-high) !important; // override core heatmapping
     }
 
     .mobile-view & {
-      margin-top: 0.07em; // need to fix this alignment
-      font-size: 1.07em; // need to fix
       h4 {
         font-size: var(--font-down-1);
         @include breakpoint(mobile-large) {
@@ -407,23 +402,6 @@ body:not(.archetype-private_message) {
       }
     }
 
-    .secondary {
-      &.--active {
-        background: var(--tertiary-low);
-      }
-    }
-
-    .created-at,
-    .last-reply,
-    .replies,
-    nav.buttons {
-      display: none;
-    }
-
-    .is-sticky & {
-      border-top: 1px solid var(--primary-low);
-    }
-
     .map > ul {
       flex-direction: row;
       gap: 1em;
@@ -481,7 +459,47 @@ body:not(.archetype-private_message) {
 }
 
 .gap {
-  // temporarily fixes missing divider between gap posts and map
+  // temporarily fixes missing dividing border between gap posts and map
   border-top: 1px solid var(--primary-low);
   padding-top: 0.5em;
+}
+
+// Hiding avatars at various breakpoints
+
+body:not(.archetype-private_message) {
+  .topic-map.--simplified {
+    @media screen and (max-width: 767px) {
+      li.avatars {
+        div:nth-child(4),
+        div:nth-child(5) {
+          display: none;
+        }
+      }
+    }
+
+    @media screen and (max-width: 650px) {
+      li.avatars {
+        display: none;
+      }
+    }
+  }
+
+  &.has-sidebar-page {
+    .topic-map.--simplified {
+      @media screen and (max-width: 1050px) {
+        li.avatars {
+          div:nth-child(4),
+          div:nth-child(5) {
+            display: none;
+          }
+        }
+      }
+
+      @media screen and (max-width: 850px) {
+        li.avatars {
+          display: none;
+        }
+      }
+    }
+  }
 }

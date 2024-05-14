@@ -9,7 +9,6 @@ import { gt } from "truth-helpers";
 import AiSummarySkeleton from "discourse/components/ai-summary-skeleton";
 import ConditionalLoadingSpinner from "discourse/components/conditional-loading-spinner";
 import DButton from "discourse/components/d-button";
-import RelativeDate from "discourse/components/relative-date";
 import TopicParticipants from "discourse/components/topic-map/topic-participants";
 import avatar from "discourse/helpers/bound-avatar-template";
 import number from "discourse/helpers/number";
@@ -19,7 +18,6 @@ import { ajax } from "discourse/lib/ajax";
 import { emojiUnescape } from "discourse/lib/text";
 import dIcon from "discourse-common/helpers/d-icon";
 import i18n from "discourse-common/helpers/i18n";
-import { avatarImg } from "discourse-common/lib/avatar-utils";
 import I18n from "discourse-i18n";
 import DMenu from "float-kit/components/d-menu";
 import and from "truth-helpers/helpers/and";
@@ -33,13 +31,10 @@ export default class SimpleTopicMapSummary extends Component {
   @service siteSettings;
 
   @tracked mostLikedPosts = [];
-
   @tracked loading = true;
 
   get generateSummaryTitle() {
-    const title = this.summary.canRegenerate ? "Resummarize" : "Summarize";
-
-    return title;
+    return this.summary.canRegenerate ? "Resummarize" : "Summarize";
   }
 
   get summary() {
@@ -52,14 +47,6 @@ export default class SimpleTopicMapSummary extends Component {
 
   get linksCount() {
     return this.args.topicDetails.links?.length ?? 0;
-  }
-
-  get createdByUsername() {
-    return this.args.topicDetails.created_by?.username;
-  }
-
-  get lastPosterUsername() {
-    return this.args.topicDetails.last_poster?.username;
   }
 
   get linksToShow() {
@@ -82,32 +69,7 @@ export default class SimpleTopicMapSummary extends Component {
     return (
       this.args.collapsed &&
       this.args.topic.posts_count > 2 &&
-      this.args.topicDetails.participants &&
-      this.args.topicDetails.participants.length > 0
-    );
-  }
-
-  get createdByAvatar() {
-    return htmlSafe(
-      avatarImg({
-        avatarTemplate: this.args.topicDetails.created_by?.avatar_template,
-        size: "tiny",
-        title:
-          this.args.topicDetails.created_by?.name ||
-          this.args.topicDetails.created_by?.username,
-      })
-    );
-  }
-
-  get lastPostAvatar() {
-    return htmlSafe(
-      avatarImg({
-        avatarTemplate: this.args.topicDetails.last_poster?.avatar_template,
-        size: "tiny",
-        title:
-          this.args.topicDetails.last_poster?.name ||
-          this.args.topicDetails.last_poster?.username,
-      })
+      this.args.topicDetails.participants?.length > 0
     );
   }
 
@@ -193,59 +155,26 @@ export default class SimpleTopicMapSummary extends Component {
   @action
   cancelFilter() {
     this.args.topic.postStream.cancelFilter();
-    return this.args.topic.postStream.refresh();
+    this.args.topic.postStream.refresh();
   }
 
   @action
   showTopReplies() {
-    return this.args.topic.postStream.showTopReplies();
+    this.args.topic.postStream.showTopReplies();
   }
 
   <template>
     <ul>
-      <li class="created-at">
-        <h4 role="presentation">{{i18n "created_lowercase"}}</h4>
-        <div class="topic-map-post created-at">
-          <a
-            class="trigger-user-card"
-            data-user-card={{this.createdByUsername}}
-            title={{this.createdByUsername}}
-            aria-hidden="true"
-          />
-          {{this.createdByAvatar}}
-          <RelativeDate @date={{@topic.created_at}} />
-        </div>
-      </li>
-      <li class="last-reply">
-        <a href={{@topic.lastPostUrl}}>
-          <h4 role="presentation">{{i18n "last_reply_lowercase"}}</h4>
-          <div class="topic-map-post last-reply">
-            <a
-              class="trigger-user-card"
-              data-user-card={{this.lastPosterUsername}}
-              title={{this.lastPosterUsername}}
-              aria-hidden="true"
-            />
-            {{this.lastPostAvatar}}
-            <RelativeDate @date={{@topic.last_posted_at}} />
-          </div>
-        </a>
-      </li>
-
-      <li class="replies">
-        {{number @topic.replyCount noTitle="true"}}
-        <h4 role="presentation">{{i18n
-            "replies_lowercase"
-            count=@topic.replyCount
-          }}</h4>
-      </li>
-      <li class="secondary views">
+      <!-- to fix: button container and classes are a hack to match alignment of siblings -->
+      <button
+        class="secondary views btn no-text fk-d-menu__trigger map-likes-trigger"
+      >
         {{number @topic.views noTitle="true" class=@topic.viewsHeat}}
         <h4 role="presentation">{{i18n
             "views_lowercase"
             count=@topic.views
           }}</h4>
-      </li>
+      </button>
 
       {{#if (and (gt @topic.like_count 0) (gt @topic.posts_count 2))}}
         <DMenu
@@ -266,8 +195,7 @@ export default class SimpleTopicMapSummary extends Component {
           </:trigger>
           <:content>
             <section class="likes" {{didInsert this.fetchMostLiked}}>
-              <h3>Most liked replies</h3>
-
+              <h3>{{i18n (themePrefix "menu_titles.replies")}}</h3>
               <ConditionalLoadingSpinner @condition={{this.loading}}>
                 <ul>
                   {{#each this.mostLikedPosts as |post|}}
@@ -283,7 +211,6 @@ export default class SimpleTopicMapSummary extends Component {
                           }}
                           {{post.username}}
                         </span>
-
                         <span class="like-section__likes">
                           {{post.like_count}}
                           {{dIcon "heart"}}</span>
@@ -295,15 +222,12 @@ export default class SimpleTopicMapSummary extends Component {
                   {{/each}}
                 </ul>
               </ConditionalLoadingSpinner>
-
             </section>
           </:content>
         </DMenu>
-
       {{/if}}
 
       {{#if (gt this.linksCount 0)}}
-
         <DMenu
           @arrow={{true}}
           @identifier="map-links"
@@ -313,7 +237,6 @@ export default class SimpleTopicMapSummary extends Component {
           @groupIdentifier="topic-map"
         >
           <:trigger>
-
             {{number this.linksCount noTitle="true"}}
             <h4 role="presentation">{{i18n
                 "links_lowercase"
@@ -394,12 +317,9 @@ export default class SimpleTopicMapSummary extends Component {
                 @participants={{@topicDetails.participants}}
               />
             </section>
-
           </:content>
         </DMenu>
-
       {{/if}}
-
       {{#if this.shouldShowParticipants}}
         <li class="avatars">
           <TopicParticipants
@@ -410,10 +330,10 @@ export default class SimpleTopicMapSummary extends Component {
       {{/if}}
       <div class="map-buttons">
         <div class="estimated-read-time">
-          <span> read </span>
+          <span> {{i18n (themePrefix "read")}} </span>
           <span>
             {{this.readTime}}
-            min
+            {{i18n (themePrefix "minutes")}}
           </span>
         </div>
         <div class="summarization-buttons">
@@ -445,7 +365,8 @@ export default class SimpleTopicMapSummary extends Component {
                       <article class="summary-box">
                         {{#unless this.summary.text}}
                           <AiSummarySkeleton />
-                        {{else}}
+                        {{/unless}}
+                        {{#if this.summary.text}}
                           <div class="generated-summary">
                             {{this.summary.text}}
                           </div>
@@ -464,18 +385,15 @@ export default class SimpleTopicMapSummary extends Component {
                               {{/if}}
                             </div>
                           {{/if}}
-                        {{/unless}}
+                        {{/if}}
                       </article>
                     {{/if}}
                   </div>
                 </div>
               </:content>
-
             </DMenu>
-
           {{/if}}
           {{#if @topic.has_summary}}
-
             <DButton
               @action={{if
                 @topic.postStream.summary
@@ -490,10 +408,11 @@ export default class SimpleTopicMapSummary extends Component {
           {{/if}}
         </div>
       </div>
-
     </ul>
   </template>
 }
+
+// this is copied from core's topic-map-expanded.gjs (it's not exported there)
 
 class TopicMapLink extends Component {
   get linkClasses() {
