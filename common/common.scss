@@ -486,7 +486,7 @@ body:not(.archetype-private_message) {
 
   &.has-sidebar-page {
     .topic-map.--simplified {
-      @media screen and (max-width: 1050px) {
+      @media screen and (max-width: 1170px) {
         li.avatars {
           div:nth-child(4),
           div:nth-child(5) {
@@ -495,7 +495,7 @@ body:not(.archetype-private_message) {
         }
       }
 
-      @media screen and (max-width: 850px) {
+      @media screen and (max-width: 1000px) {
         li.avatars {
           display: none;
         }
