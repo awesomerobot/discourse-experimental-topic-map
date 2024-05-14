@@ -245,7 +245,7 @@ export default class SimpleTopicMapSummary extends Component {
             "views_lowercase"
             count=@topic.views
           }}</h4>
-      </li>{{log @topic}}
+      </li>
 
       {{#if (and (gt @topic.like_count 0) (gt @topic.posts_count 2))}}
         <DMenu
@@ -273,7 +273,7 @@ export default class SimpleTopicMapSummary extends Component {
                   {{#each this.mostLikedPosts as |post|}}
                     <li>
                       <a
-                        href="/t/{{this.args.topic.slug}}/{{this.args.topic.id}}/{{post.post_number}}"
+                        href="/t/{{@topic.slug}}/{{@topic.id}}/{{post.post_number}}"
                       >
                         <span class="like-section__user">
                           {{avatar
@@ -443,13 +443,12 @@ export default class SimpleTopicMapSummary extends Component {
                     {{#if this.summary.showSummaryBox}}
                       <h3>Topic Summary</h3>
                       <article class="summary-box">
-                        {{#if (not this.summary.text)}}
+                        {{#unless this.summary.text}}
                           <AiSummarySkeleton />
                         {{else}}
-                          <div
-                            class="generated-summary"
-                          >{{this.summary.text}}</div>
-
+                          <div class="generated-summary">
+                            {{this.summary.text}}
+                          </div>
                           {{#if this.summary.summarizedOn}}
                             <div class="summarized-on">
                               <p>
@@ -457,9 +456,7 @@ export default class SimpleTopicMapSummary extends Component {
                                   "summary.summarized_on"
                                   date=this.summary.summarizedOn
                                 }}
-
                               </p>
-
                               {{#if this.summary.outdated}}
                                 <p class="outdated-summary">
                                   {{this.outdatedSummaryWarningText}}
@@ -467,7 +464,7 @@ export default class SimpleTopicMapSummary extends Component {
                               {{/if}}
                             </div>
                           {{/if}}
-                        {{/if}}
+                        {{/unless}}
                       </article>
                     {{/if}}
                   </div>

@@ -8,8 +8,6 @@ import SimpleTopicMapSummary from "../components/simple-topic-map-summary";
 
 export default class StickyMap extends Component {
   @service currentUser;
-  @service stickyMapState;
-
   @tracked isOP = this.args.outletArgs.isOP ? true : false;
 
   observer = null;
