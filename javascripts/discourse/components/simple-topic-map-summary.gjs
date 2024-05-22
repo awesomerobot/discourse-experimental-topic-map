@@ -68,8 +68,8 @@ export default class SimpleTopicMapSummary extends Component {
   get shouldShowParticipants() {
     return (
       this.args.collapsed &&
-      this.args.topic.posts_count > 2 &&
-      this.args.topicDetails.participants?.length > 5
+      this.args.topic.posts_count >= 10 &&
+      this.args.topicDetails.participants?.length >= 2
     );
   }
 
@@ -81,7 +81,7 @@ export default class SimpleTopicMapSummary extends Component {
       )
     );
 
-    return calculatedTime > 2 ? calculatedTime : null;
+    return calculatedTime > 3 ? calculatedTime : null;
   }
 
   get topRepliesSummaryEnabled() {
@@ -153,18 +153,33 @@ export default class SimpleTopicMapSummary extends Component {
 
   @action
   fetchMostLiked() {
+    const cacheKey = `mostLikedPosts_${this.args.topic.id}`;
+    const cachedData = localStorage.getItem(cacheKey);
+    const cacheTimestamp = localStorage.getItem(`${cacheKey}_timestamp`);
+    const now = Date.now();
+
+    if (cachedData && cacheTimestamp && now - cacheTimestamp < 60000) {
+      this.mostLikedPosts = JSON.parse(cachedData);
+      this.loading = false;
+      return;
+    }
+
     this.loading = true;
     const filter = `/search.json?q=" " topic%3A${this.args.topic.id} order%3Alikes`;
 
     ajax(filter)
       .then((data) => {
         data.posts.sort((a, b) => b.like_count - a.like_count);
-        this.mostLikedPosts = data.posts
+        const mostLikedPosts = data.posts
           .filter((post) => post.post_number !== 1 && post.like_count !== 0)
           .slice(0, 3);
+
+        localStorage.setItem(cacheKey, JSON.stringify(mostLikedPosts));
+        localStorage.setItem(`${cacheKey}_timestamp`, now);
+
+        this.mostLikedPosts = mostLikedPosts;
       })
       .catch((error) => {
-        // eslint-disable-next-line no-console
         console.error("Error fetching posts:", error);
       })
       .finally(() => {
@@ -312,7 +327,7 @@ export default class SimpleTopicMapSummary extends Component {
           </:content>
         </DMenu>
       {{/if}}
-      {{#if (and (gt @topic.participant_count 5) this.shouldShowParticipants)}}
+      {{#if (gt @topic.participant_count 5)}}
         <DMenu
           @arrow={{true}}
           @identifier="map-users"
