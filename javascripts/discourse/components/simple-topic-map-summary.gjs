@@ -69,17 +69,19 @@ export default class SimpleTopicMapSummary extends Component {
     return (
       this.args.collapsed &&
       this.args.topic.posts_count > 2 &&
-      this.args.topicDetails.participants?.length > 0
+      this.args.topicDetails.participants?.length > 5
     );
   }
 
   get readTime() {
-    return Math.ceil(
+    const calculatedTime = Math.ceil(
       Math.max(
         this.args.topic.word_count / this.siteSettings.read_time_word_count,
         (this.args.topic.posts_count * 4) / 60
       )
     );
+
+    return calculatedTime > 2 ? calculatedTime : null;
   }
 
   get topRepliesSummaryEnabled() {
@@ -131,6 +133,24 @@ export default class SimpleTopicMapSummary extends Component {
     return "layer-group";
   }
 
+  get loneStat() {
+    const hasViews = this.args.topic.views >= 0;
+    const hasLikes =
+      this.args.topic.like_count > 5 && this.args.topic.posts_count > 10;
+    const hasLinks = this.linksCount > 0;
+    const hasUsers = this.args.topic.participant_count > 5;
+    const canSummarize =
+      this.args.topic.summarizable || this.args.topic.has_summary;
+
+    if (canSummarize) {
+      return false;
+    }
+
+    return (
+      [hasViews, hasLikes, hasLinks, hasUsers].filter(Boolean).length === 1
+    );
+  }
+
   @action
   fetchMostLiked() {
     this.loading = true;
@@ -164,7 +184,7 @@ export default class SimpleTopicMapSummary extends Component {
   }
 
   <template>
-    <ul>
+    <ul class={{if this.loneStat "--single-stat"}}>
       <!-- to fix: button container and classes are a hack to match alignment of siblings -->
       <button
         class="secondary views btn no-text fk-d-menu__trigger map-likes-trigger"
@@ -176,7 +196,7 @@ export default class SimpleTopicMapSummary extends Component {
           }}</h4>
       </button>
 
-      {{#if (and (gt @topic.like_count 0) (gt @topic.posts_count 2))}}
+      {{#if (and (gt @topic.like_count 5) (gt @topic.posts_count 10))}}
         <DMenu
           @arrow={{true}}
           @identifier="map-likes"
@@ -329,13 +349,15 @@ export default class SimpleTopicMapSummary extends Component {
         </li>
       {{/if}}
       <div class="map-buttons">
-        <div class="estimated-read-time">
-          <span> {{i18n (themePrefix "read")}} </span>
-          <span>
-            {{this.readTime}}
-            {{i18n (themePrefix "minutes")}}
-          </span>
-        </div>
+        {{#if this.readTime}}
+          <div class="estimated-read-time">
+            <span> {{i18n (themePrefix "read")}} </span>
+            <span>
+              {{this.readTime}}
+              {{i18n (themePrefix "minutes")}}
+            </span>
+          </div>
+        {{/if}}
         <div class="summarization-buttons">
           {{#if @topic.summarizable}}
             <DMenu

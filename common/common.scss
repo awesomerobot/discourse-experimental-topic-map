@@ -24,7 +24,7 @@ body:not(.archetype-private_message) {
     .topic-map {
       box-sizing: border-box;
       margin: 0;
-      padding: 0.5em 0.5em 0.5em
+      padding: 0.5em 0 0.5em
         calc(var(--topic-body-width-padding) + var(--topic-avatar-width));
 
       @media screen and (max-width: 500px) {
@@ -405,12 +405,22 @@ body:not(.archetype-private_message) {
     .map > ul {
       flex-direction: row;
       gap: 1em;
-      .fk-d-menu__trigger {
-        &:hover {
-          .number,
-          .presentation {
-            color: var(--tertiary);
+      &.--single-stat {
+        button {
+          flex-direction: row;
+          gap: 0.25em;
+          h4,
+          span {
+            font-size: var(--font-0);
+            color: var(--primary-700) !important;
           }
+        }
+      }
+
+      .fk-d-menu__trigger {
+        .number,
+        .presentation {
+          color: var(--tertiary);
         }
 
         .mobile-view & {
@@ -461,6 +471,10 @@ body:not(.archetype-private_message) {
 .gap {
   // temporarily fixes missing dividing border between gap posts and map
   border-top: 1px solid var(--primary-low);
+  max-width: calc(
+    var(--topic-avatar-width) + var(--topic-body-width) +
+      (var(--topic-body-width-padding) * 2)
+  );
   padding-top: 0.5em;
 }
 
@@ -495,7 +509,7 @@ body:not(.archetype-private_message) {
         }
       }
 
-      @media screen and (max-width: 1075px) {
+      @media screen and (max-width: 1090px) {
         li.avatars {
           display: none;
         }

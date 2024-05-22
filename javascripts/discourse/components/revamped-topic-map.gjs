@@ -18,9 +18,9 @@ export default class RevampedTopicMap extends Component {
       return;
     }
 
-    if (this.isOP && this.args.outletArgs.model.posts_count > 4) {
+    if (this.isOP) {
       return true;
-    } else if (!this.isOP) {
+    } else if (!this.isOP && this.args.outletArgs.model.posts_count > 10) {
       return true;
     }
   }
