@@ -36,7 +36,7 @@ body:not(.archetype-private_message) {
         line-height: 1.2;
       }
 
-      h4 {
+      span {
         margin: 0;
       }
 
@@ -163,7 +163,7 @@ body:not(.archetype-private_message) {
     }
 
     .mobile-view & {
-      h4 {
+      span {
         font-size: var(--font-down-1);
         @include breakpoint(mobile-large) {
           letter-spacing: 0.2px;
@@ -405,11 +405,19 @@ body:not(.archetype-private_message) {
     .map > ul {
       flex-direction: row;
       gap: 1em;
+
+      > button {
+        span {
+          font-size: var(--font-down-1);
+          color: var(--primary-medium);
+        }
+      }
+
       &.--single-stat {
         button {
           flex-direction: row;
           gap: 0.25em;
-          h4,
+
           span {
             font-size: var(--font-0);
             color: var(--primary-700) !important;

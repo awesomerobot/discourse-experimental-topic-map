@@ -180,6 +180,7 @@ export default class SimpleTopicMapSummary extends Component {
         this.mostLikedPosts = mostLikedPosts;
       })
       .catch((error) => {
+        // eslint-disable-next-line no-console
         console.error("Error fetching posts:", error);
       })
       .finally(() => {
@@ -200,15 +201,15 @@ export default class SimpleTopicMapSummary extends Component {
 
   <template>
     <ul class={{if this.loneStat "--single-stat"}}>
-      <!-- to fix: button container and classes are a hack to match alignment of siblings -->
       <button
+        type="button"
         class="secondary views btn no-text fk-d-menu__trigger map-likes-trigger"
       >
         {{number @topic.views noTitle="true" class=@topic.viewsHeat}}
-        <h4 role="presentation">{{i18n
+        <span role="presentation">{{i18n
             "views_lowercase"
             count=@topic.views
-          }}</h4>
+          }}</span>
       </button>
 
       {{#if (and (gt @topic.like_count 5) (gt @topic.posts_count 10))}}
@@ -223,10 +224,10 @@ export default class SimpleTopicMapSummary extends Component {
         >
           <:trigger>
             {{number @topic.like_count noTitle="true"}}
-            <h4 role="presentation">{{i18n
+            <span role="presentation">{{i18n
                 "likes_lowercase"
                 count=@topic.like_count
-              }}</h4>
+              }}</span>
           </:trigger>
           <:content>
             <section class="likes" {{didInsert this.fetchMostLiked}}>
@@ -273,10 +274,10 @@ export default class SimpleTopicMapSummary extends Component {
         >
           <:trigger>
             {{number this.linksCount noTitle="true"}}
-            <h4 role="presentation">{{i18n
+            <span role="presentation">{{i18n
                 "links_lowercase"
                 count=this.linksCount
-              }}</h4>
+              }}</span>
           </:trigger>
           <:content>
             <section class="links">
@@ -339,10 +340,10 @@ export default class SimpleTopicMapSummary extends Component {
         >
           <:trigger>
             {{number @topic.participant_count noTitle="true"}}
-            <h4 role="presentation">{{i18n
+            <span role="presentation">{{i18n
                 "users_lowercase"
                 count=@topic.participant_count
-              }}</h4>
+              }}</span>
           </:trigger>
           <:content>
             <section class="avatars">
