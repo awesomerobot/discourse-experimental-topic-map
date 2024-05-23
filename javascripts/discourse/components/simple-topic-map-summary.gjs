@@ -271,6 +271,7 @@ export default class SimpleTopicMapSummary extends Component {
           @triggers="click"
           @modalForMobile={{true}}
           @groupIdentifier="topic-map"
+          @placement="right"
         >
           <:trigger>
             {{number this.linksCount noTitle="true"}}
