@@ -68,18 +68,20 @@ export default class SimpleTopicMapSummary extends Component {
   get shouldShowParticipants() {
     return (
       this.args.collapsed &&
-      this.args.topic.posts_count > 2 &&
-      this.args.topicDetails.participants?.length > 0
+      this.args.topic.posts_count >= 10 &&
+      this.args.topicDetails.participants?.length >= 2
     );
   }
 
   get readTime() {
-    return Math.ceil(
+    const calculatedTime = Math.ceil(
       Math.max(
         this.args.topic.word_count / this.siteSettings.read_time_word_count,
         (this.args.topic.posts_count * 4) / 60
       )
     );
+
+    return calculatedTime > 3 ? calculatedTime : null;
   }
 
   get topRepliesSummaryEnabled() {
@@ -131,17 +133,51 @@ export default class SimpleTopicMapSummary extends Component {
     return "layer-group";
   }
 
+  get loneStat() {
+    const hasViews = this.args.topic.views >= 0;
+    const hasLikes =
+      this.args.topic.like_count > 5 && this.args.topic.posts_count > 10;
+    const hasLinks = this.linksCount > 0;
+    const hasUsers = this.args.topic.participant_count > 5;
+    const canSummarize =
+      this.args.topic.summarizable || this.args.topic.has_summary;
+
+    if (canSummarize) {
+      return false;
+    }
+
+    return (
+      [hasViews, hasLikes, hasLinks, hasUsers].filter(Boolean).length === 1
+    );
+  }
+
   @action
   fetchMostLiked() {
+    const cacheKey = `mostLikedPosts_${this.args.topic.id}`;
+    const cachedData = localStorage.getItem(cacheKey);
+    const cacheTimestamp = localStorage.getItem(`${cacheKey}_timestamp`);
+    const now = Date.now();
+
+    if (cachedData && cacheTimestamp && now - cacheTimestamp < 60000) {
+      this.mostLikedPosts = JSON.parse(cachedData);
+      this.loading = false;
+      return;
+    }
+
     this.loading = true;
     const filter = `/search.json?q=" " topic%3A${this.args.topic.id} order%3Alikes`;
 
     ajax(filter)
       .then((data) => {
         data.posts.sort((a, b) => b.like_count - a.like_count);
-        this.mostLikedPosts = data.posts
+        const mostLikedPosts = data.posts
           .filter((post) => post.post_number !== 1 && post.like_count !== 0)
           .slice(0, 3);
+
+        localStorage.setItem(cacheKey, JSON.stringify(mostLikedPosts));
+        localStorage.setItem(`${cacheKey}_timestamp`, now);
+
+        this.mostLikedPosts = mostLikedPosts;
       })
       .catch((error) => {
         // eslint-disable-next-line no-console
@@ -164,19 +200,19 @@ export default class SimpleTopicMapSummary extends Component {
   }
 
   <template>
-    <ul>
-      <!-- to fix: button container and classes are a hack to match alignment of siblings -->
+    <ul class={{if this.loneStat "--single-stat"}}>
       <button
+        type="button"
         class="secondary views btn no-text fk-d-menu__trigger map-likes-trigger"
       >
         {{number @topic.views noTitle="true" class=@topic.viewsHeat}}
-        <h4 role="presentation">{{i18n
+        <span role="presentation">{{i18n
             "views_lowercase"
             count=@topic.views
-          }}</h4>
+          }}</span>
       </button>
 
-      {{#if (and (gt @topic.like_count 0) (gt @topic.posts_count 2))}}
+      {{#if (and (gt @topic.like_count 5) (gt @topic.posts_count 10))}}
         <DMenu
           @arrow={{true}}
           @identifier="map-likes"
@@ -188,10 +224,10 @@ export default class SimpleTopicMapSummary extends Component {
         >
           <:trigger>
             {{number @topic.like_count noTitle="true"}}
-            <h4 role="presentation">{{i18n
+            <span role="presentation">{{i18n
                 "likes_lowercase"
                 count=@topic.like_count
-              }}</h4>
+              }}</span>
           </:trigger>
           <:content>
             <section class="likes" {{didInsert this.fetchMostLiked}}>
@@ -238,10 +274,10 @@ export default class SimpleTopicMapSummary extends Component {
         >
           <:trigger>
             {{number this.linksCount noTitle="true"}}
-            <h4 role="presentation">{{i18n
+            <span role="presentation">{{i18n
                 "links_lowercase"
                 count=this.linksCount
-              }}</h4>
+              }}</span>
           </:trigger>
           <:content>
             <section class="links">
@@ -292,7 +328,7 @@ export default class SimpleTopicMapSummary extends Component {
           </:content>
         </DMenu>
       {{/if}}
-      {{#if (and (gt @topic.participant_count 5) this.shouldShowParticipants)}}
+      {{#if (gt @topic.participant_count 5)}}
         <DMenu
           @arrow={{true}}
           @identifier="map-users"
@@ -304,10 +340,10 @@ export default class SimpleTopicMapSummary extends Component {
         >
           <:trigger>
             {{number @topic.participant_count noTitle="true"}}
-            <h4 role="presentation">{{i18n
+            <span role="presentation">{{i18n
                 "users_lowercase"
                 count=@topic.participant_count
-              }}</h4>
+              }}</span>
           </:trigger>
           <:content>
             <section class="avatars">
@@ -329,13 +365,15 @@ export default class SimpleTopicMapSummary extends Component {
         </li>
       {{/if}}
       <div class="map-buttons">
-        <div class="estimated-read-time">
-          <span> {{i18n (themePrefix "read")}} </span>
-          <span>
-            {{this.readTime}}
-            {{i18n (themePrefix "minutes")}}
-          </span>
-        </div>
+        {{#if this.readTime}}
+          <div class="estimated-read-time">
+            <span> {{i18n (themePrefix "read")}} </span>
+            <span>
+              {{this.readTime}}
+              {{i18n (themePrefix "minutes")}}
+            </span>
+          </div>
+        {{/if}}
         <div class="summarization-buttons">
           {{#if @topic.summarizable}}
             <DMenu
