@@ -23,14 +23,17 @@ import DMenu from "float-kit/components/d-menu";
 import and from "truth-helpers/helpers/and";
 import lt from "truth-helpers/helpers/lt";
 import not from "truth-helpers/helpers/not";
+import TopicViewsChart from "../components/topic-views-chart";
 
 const TRUNCATED_LINKS_LIMIT = 5;
 const MIN_POST_READ_TIME = 4;
 
 export default class SimpleTopicMapSummary extends Component {
   @service siteSettings;
+  @service mapCache;
 
   @tracked mostLikedPosts = [];
+  @tracked views = [];
   @tracked loading = true;
 
   get generateSummaryTitle() {
@@ -154,12 +157,10 @@ export default class SimpleTopicMapSummary extends Component {
   @action
   fetchMostLiked() {
     const cacheKey = `mostLikedPosts_${this.args.topic.id}`;
-    const cachedData = localStorage.getItem(cacheKey);
-    const cacheTimestamp = localStorage.getItem(`${cacheKey}_timestamp`);
-    const now = Date.now();
+    const cachedData = this.mapCache.get(cacheKey);
 
-    if (cachedData && cacheTimestamp && now - cacheTimestamp < 60000) {
-      this.mostLikedPosts = JSON.parse(cachedData);
+    if (cachedData) {
+      this.mostLikedPosts = cachedData;
       this.loading = false;
       return;
     }
@@ -174,14 +175,37 @@ export default class SimpleTopicMapSummary extends Component {
           .filter((post) => post.post_number !== 1 && post.like_count !== 0)
           .slice(0, 3);
 
-        localStorage.setItem(cacheKey, JSON.stringify(mostLikedPosts));
-        localStorage.setItem(`${cacheKey}_timestamp`, now);
-
+        this.mapCache.set(cacheKey, mostLikedPosts);
         this.mostLikedPosts = mostLikedPosts;
       })
       .catch((error) => {
         // eslint-disable-next-line no-console
         console.error("Error fetching posts:", error);
+      })
+      .finally(() => {
+        this.loading = false;
+      });
+  }
+
+  @action
+  fetchViews() {
+    const cacheKey = `topicViews_${this.args.topic.id}`;
+    const cachedData = this.mapCache.get(cacheKey);
+
+    if (cachedData) {
+      this.views = cachedData;
+      this.loading = false;
+      return;
+    }
+
+    ajax(`/t/${this.args.topic.id}/view-stats.json`)
+      .then((data) => {
+        this.views = data;
+        this.mapCache.set(cacheKey, data.views);
+      })
+      .catch((error) => {
+        // eslint-disable-next-line no-console
+        console.error("Error fetching views:", error);
       })
       .finally(() => {
         this.loading = false;
@@ -201,16 +225,39 @@ export default class SimpleTopicMapSummary extends Component {
 
   <template>
     <ul class={{if this.loneStat "--single-stat"}}>
-      <button
-        type="button"
-        class="secondary views btn no-text fk-d-menu__trigger map-likes-trigger"
+      <DMenu
+        @arrow={{true}}
+        @identifier="map-views"
+        @interactive={{true}}
+        @triggers="click"
+        @modalForMobile={{true}}
+        @placement="right"
+        @groupIdentifier="topic-map"
       >
-        {{number @topic.views noTitle="true" class=@topic.viewsHeat}}
-        <span role="presentation">{{i18n
-            "views_lowercase"
-            count=@topic.views
-          }}</span>
-      </button>
+        <:trigger>
+          {{number @topic.views noTitle="true"}}
+          <span role="presentation">{{i18n
+              "views_lowercase"
+              count=@topic.views
+            }}</span>
+        </:trigger>
+        <:content>
+          <section class="views" {{didInsert this.fetchViews}}>
+            <h3>{{i18n (themePrefix "menu_titles.views")}}</h3>
+            <ConditionalLoadingSpinner @condition={{this.loading}}>
+              <TopicViewsChart
+                @views={{this.views}}
+                @created={{@topic.created_at}}
+              />
+
+              <div class="view-explainer">{{i18n
+                  (themePrefix "view_explainer")
+                }}</div>
+
+            </ConditionalLoadingSpinner>
+          </section>
+        </:content>
+      </DMenu>
 
       {{#if (and (gt @topic.like_count 5) (gt @topic.posts_count 10))}}
         <DMenu
