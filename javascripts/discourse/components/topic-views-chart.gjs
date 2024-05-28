@@ -4,6 +4,20 @@ import { action } from "@ember/object";
 import didInsert from "@ember/render-modifiers/modifiers/did-insert";
 import loadScript from "discourse/lib/load-script";
 
+function calculateAdjustedStepSize(data) {
+  const range =
+    Math.max(...data.map((item) => item.y)) -
+    Math.min(...data.map((item) => item.y));
+
+  if (range < 5) {
+    return 1;
+  }
+
+  const stepSize = range / 5;
+  const magnitude = Math.pow(10, Math.floor(Math.log10(stepSize)));
+  return Math.ceil(stepSize / magnitude) * magnitude;
+}
+
 export default class TopicViewsChart extends Component {
   @tracked chart = null;
 
@@ -34,8 +48,11 @@ export default class TopicViewsChart extends Component {
       data.push(bufferAfter);
     }
 
-    const chartMin = Math.min(...data.map((item) => item.x));
-    const chartMax = Math.max(...data.map((item) => item.x));
+    const xMin = Math.min(...data.map((item) => item.x));
+    const xMax = Math.max(...data.map((item) => item.x));
+
+    const filteredData = data.filter((item) => item.y !== undefined);
+    const yMax = Math.max(...filteredData.map((item) => item.y));
 
     const topicMapElement = document.querySelector(".revamped-topic-map");
 
@@ -66,14 +83,12 @@ export default class TopicViewsChart extends Component {
         ],
       },
       options: {
-        responsive: true,
-
         scales: {
           x: {
             type: "linear",
             position: "bottom",
-            min: chartMin,
-            max: chartMax,
+            min: xMin,
+            max: xMax,
             ticks: {
               autoSkip: true,
               maxTicksLimit: data.length,
@@ -88,18 +103,11 @@ export default class TopicViewsChart extends Component {
           },
           y: {
             beginAtZero: true,
+            suggestedMax: yMax,
             ticks: {
-              stepSize: 1, // whole numbers
+              stepSize: calculateAdjustedStepSize(filteredData),
               callback: function (value) {
-                if (value < 100) {
-                  return value;
-                } else if (value < 1000) {
-                  return Math.round(value / 10) * 10;
-                } else if (value < 10000) {
-                  return Math.round(value / 100) * 100;
-                } else {
-                  return Math.round(value / 1000) * 1000;
-                }
+                return value;
               },
             },
           },
