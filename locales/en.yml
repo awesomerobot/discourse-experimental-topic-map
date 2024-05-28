@@ -3,5 +3,7 @@ en:
     description: ""
   menu_titles:
     replies: "Most liked replies"
+    views: Recent views
+  view_explainer: One view per unique visitor every 8 hours.
   read: read
   minutes: min

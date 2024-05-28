@@ -12,6 +12,8 @@ body:not(.archetype-private_message) {
   }
 
   .revamped-topic-map {
+    --chart-line-color: var(--tertiary-medium);
+    --chart-point-color: var(--tertiary);
     max-width: calc(
       var(--topic-avatar-width) + var(--topic-body-width) +
         (var(--topic-body-width-padding) * 2)
@@ -126,6 +128,8 @@ body:not(.archetype-private_message) {
       margin-top: -0.5em;
     }
   }
+
+  .map-views-content,
   .map-likes-content,
   .map-links-content,
   .map-users-content,
@@ -146,6 +150,10 @@ body:not(.archetype-private_message) {
           max-width: 90dvw;
         }
       }
+    }
+
+    .d-modal__body {
+      width: 100%;
     }
 
     section,
@@ -187,6 +195,12 @@ body:not(.archetype-private_message) {
         }
       }
     }
+  }
+
+  .view-explainer {
+    color: var(--primary-700);
+    font-size: var(--font-down-1);
+    margin-top: 1em;
   }
 
   .estimated-read-time {
@@ -454,16 +468,8 @@ body:not(.archetype-private_message) {
       }
 
       .fk-d-menu__trigger {
-        .number,
-        .presentation {
+        .number {
           color: var(--tertiary);
-        }
-
-        .mobile-view & {
-          .number,
-          .presentation {
-            color: var(--tertiary);
-          }
         }
       }
     }
