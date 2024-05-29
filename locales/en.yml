@@ -5,5 +5,6 @@ en:
     replies: "Most liked replies"
     views: Recent views
   view_explainer: One view per unique visitor every 8 hours.
+  no_views: No view stats yet, check back later.
   read: read
   minutes: min

@@ -12,8 +12,7 @@ body:not(.archetype-private_message) {
   }
 
   .revamped-topic-map {
-    --chart-line-color: var(--tertiary-medium);
-    --chart-point-color: var(--tertiary);
+    --chart-bar-color: var(--tertiary);
     max-width: calc(
       var(--topic-avatar-width) + var(--topic-body-width) +
         (var(--topic-body-width-padding) * 2)
@@ -23,7 +22,9 @@ body:not(.archetype-private_message) {
       font-size: var(--font-down-1);
     }
 
-    .topic-map {
+    > .topic-map {
+      // topic-map class is resued within summaries for now,
+      // shouldn't need the child combinator when moved to core
       box-sizing: border-box;
       margin: 0;
       padding: 0.5em 0 0.5em
@@ -47,6 +48,9 @@ body:not(.archetype-private_message) {
           padding: 0;
           float: none;
         }
+        .d-icon {
+          font-size: var(--font-0); // core rule messes up menu caret
+        }
       }
 
       li.avatars {
@@ -57,6 +61,7 @@ body:not(.archetype-private_message) {
         gap: 0.25em;
         .avatar-flair,
         .post-count {
+          // removed intentionally to simplify
           display: none;
         }
 
@@ -74,12 +79,6 @@ body:not(.archetype-private_message) {
         .avatar {
           width: 2em;
           height: 2em;
-        }
-      }
-
-      @media screen and (max-width: 600px) {
-        li.avatars {
-          display: none;
         }
       }
     }
@@ -104,36 +103,11 @@ body:not(.archetype-private_message) {
     }
   }
 
-  [data-identifier="map-likes"],
-  [data-identifier="map-links"] {
-    .fk-d-menu__inner-content,
-    .d-modal__container {
-      padding-bottom: 0.5em !important;
-    }
-    h3 {
-      margin-top: -1.5rem;
-      background: var(--secondary);
-      position: sticky;
-      padding: 0.75rem 0 0.25rem;
-      top: -1.5rem;
-      z-index: 2;
-    }
-    a {
-      overflow-wrap: anywhere;
-    }
+  a {
+    overflow-wrap: anywhere;
   }
 
-  [data-identifier="map-users"] {
-    h3 {
-      margin-top: -0.5em;
-    }
-  }
-
-  .map-views-content,
-  .map-likes-content,
-  .map-links-content,
-  .map-users-content,
-  .map-summary-content {
+  .fk-d-menu__content {
     .fk-d-menu__inner-content,
     .d-modal__container {
       box-sizing: border-box;
@@ -143,7 +117,6 @@ body:not(.archetype-private_message) {
       overflow: auto;
       align-items: start;
       overscroll-behavior: contain;
-      padding: 1.5em;
       .desktop-view & {
         @include breakpoint(mobile-large) {
           min-width: unset;
@@ -156,9 +129,24 @@ body:not(.archetype-private_message) {
       width: 100%;
     }
 
-    section,
     .loading-container {
       width: 100%;
+    }
+
+    .toggle-summary,
+    section {
+      box-sizing: border-box;
+      border: none;
+      padding: 1.5em;
+      width: 100%;
+
+      h3 {
+        font-weight: bold;
+        font-size: var(--font-up-1);
+        margin-top: -0.35em;
+        margin-bottom: 0.5em;
+        width: 100%;
+      }
     }
 
     tbody {
@@ -175,25 +163,6 @@ body:not(.archetype-private_message) {
 
     td {
       padding: 0.5em 0;
-    }
-  }
-
-  .secondary.views {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    pointer-events: none;
-    .number {
-      color: var(--primary-high) !important; // override core heatmapping
-    }
-
-    .mobile-view & {
-      span {
-        font-size: var(--font-down-1);
-        @include breakpoint(mobile-large) {
-          letter-spacing: 0.2px;
-        }
-      }
     }
   }
 
@@ -242,18 +211,11 @@ body:not(.archetype-private_message) {
     .fk-d-menu__inner-content {
       max-height: 500px;
       max-width: 90vw;
+      overflow: auto;
 
       @media screen and (min-width: 400px) {
         width: 400px;
       }
-
-      overflow: auto;
-    }
-
-    .toggle-summary h3 {
-      font-size: var(--font-up-1);
-      font-weight: bold;
-      margin-bottom: 1em;
     }
 
     .toggle-summary .summary-box {
@@ -379,7 +341,7 @@ body:not(.archetype-private_message) {
       flex-wrap: wrap;
       gap: 0.5em;
       h3 {
-        width: 100%;
+        margin-bottom: 0.25em;
       }
     }
     .poster {
@@ -393,12 +355,14 @@ body:not(.archetype-private_message) {
     }
     .post-count {
       position: absolute;
-      z-index: 2;
-      border-radius: 1em;
-      padding: 0 0.4em;
-      font-size: var(--font-down-1);
-      right: -0.25em;
       top: 0;
+      right: 0;
+      border-radius: 100px;
+      padding: 0.15em 0.4em 0.2em;
+      text-align: center;
+      font-weight: normal;
+      font-size: var(--font-down-2);
+      line-height: var(--line-height-small);
     }
     .avatar-flair {
       position: absolute;

@@ -29,6 +29,7 @@ const TRUNCATED_LINKS_LIMIT = 5;
 const MIN_POST_READ_TIME = 4;
 
 export default class SimpleTopicMapSummary extends Component {
+  @service site;
   @service siteSettings;
   @service mapCache;
 
@@ -72,7 +73,8 @@ export default class SimpleTopicMapSummary extends Component {
     return (
       this.args.collapsed &&
       this.args.topic.posts_count >= 10 &&
-      this.args.topicDetails.participants?.length >= 2
+      this.args.topicDetails.participants?.length >= 2 &&
+      !this.site.mobileView
     );
   }
 
@@ -233,6 +235,7 @@ export default class SimpleTopicMapSummary extends Component {
         @modalForMobile={{true}}
         @placement="right"
         @groupIdentifier="topic-map"
+        @inline={{true}}
       >
         <:trigger>
           {{number @topic.views noTitle="true"}}
@@ -249,11 +252,6 @@ export default class SimpleTopicMapSummary extends Component {
                 @views={{this.views}}
                 @created={{@topic.created_at}}
               />
-
-              <div class="view-explainer">{{i18n
-                  (themePrefix "view_explainer")
-                }}</div>
-
             </ConditionalLoadingSpinner>
           </section>
         </:content>
@@ -268,6 +266,7 @@ export default class SimpleTopicMapSummary extends Component {
           @modalForMobile={{true}}
           @placement="right"
           @groupIdentifier="topic-map"
+          @inline={{true}}
         >
           <:trigger>
             {{number @topic.like_count noTitle="true"}}
@@ -319,6 +318,7 @@ export default class SimpleTopicMapSummary extends Component {
           @modalForMobile={{true}}
           @groupIdentifier="topic-map"
           @placement="right"
+          @inline={{true}}
         >
           <:trigger>
             {{number this.linksCount noTitle="true"}}
@@ -385,6 +385,7 @@ export default class SimpleTopicMapSummary extends Component {
           @placement="right"
           @modalForMobile={{true}}
           @groupIdentifier="topic-map"
+          @inline={{true}}
         >
           <:trigger>
             {{number @topic.participant_count noTitle="true"}}
@@ -433,6 +434,7 @@ export default class SimpleTopicMapSummary extends Component {
               @placement="left"
               @modalForMobile={{true}}
               @groupIdentifier="topic-map"
+              @inline={{true}}
             >
               <:trigger>
                 <DButton
