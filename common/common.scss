@@ -483,3 +483,15 @@ body:not(.archetype-private_message) {
   );
   padding-top: 0.5em;
 }
+
+.mobile-view {
+  [class*="map-"] {
+    .d-modal__body {
+      padding: 1em 1em 2em 1em;
+
+      h3 {
+        width: 100%;
+      }
+    }
+  }
+}

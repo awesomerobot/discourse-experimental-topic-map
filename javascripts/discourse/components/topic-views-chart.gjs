@@ -28,7 +28,7 @@ export default class TopicViewsChart extends Component {
     await loadScript("/javascripts/Chart.min.js");
 
     if (!this.args.views?.stats || this.args.views?.stats?.length === 0) {
-      this.noData = true;
+      return (this.noData = true);
     }
 
     const data = this.args.views.stats.map((item) => ({
