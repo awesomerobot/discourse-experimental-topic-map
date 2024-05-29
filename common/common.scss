@@ -82,6 +82,10 @@ body:not(.archetype-private_message) {
         }
       }
     }
+
+    a {
+      overflow-wrap: anywhere;
+    }
   }
 
   .map-buttons {
@@ -101,10 +105,6 @@ body:not(.archetype-private_message) {
       background: transparent;
       min-width: 0;
     }
-  }
-
-  a {
-    overflow-wrap: anywhere;
   }
 
   .fk-d-menu__content {
