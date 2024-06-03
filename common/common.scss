@@ -48,6 +48,7 @@ body:not(.archetype-private_message) {
       .map {
         li {
           padding: 0;
+          width: 100%;
           float: none;
         }
         .d-icon {
