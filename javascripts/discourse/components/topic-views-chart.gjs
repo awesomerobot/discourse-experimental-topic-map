@@ -19,6 +19,23 @@ function calculateAdjustedStepSize(data) {
   return Math.ceil(stepSize / magnitude) * magnitude;
 }
 
+function fillMissingDates(data) {
+  const filledData = [];
+  const oneDay = 86400000;
+  let currentDate = new Date(data[0].x);
+
+  for (let i = 0; i < data.length; i++) {
+    while (currentDate.getTime() < data[i].x) {
+      filledData.push({ x: currentDate.getTime(), y: 0 });
+      currentDate = new Date(currentDate.getTime() + oneDay);
+    }
+    filledData.push(data[i]);
+    currentDate = new Date(currentDate.getTime() + oneDay);
+  }
+
+  return filledData;
+}
+
 export default class TopicViewsChart extends Component {
   @tracked chart = null;
   @tracked noData = false;
@@ -31,22 +48,31 @@ export default class TopicViewsChart extends Component {
       return (this.noData = true);
     }
 
-    const data = this.args.views.stats.map((item) => ({
+    let data = this.args.views.stats.map((item) => ({
       x: new Date(`${item.viewed_at}T00:00:00`).getTime(),
       y: item.views,
     }));
 
-    const context = element.getContext("2d");
+    data = fillMissingDates(data);
+
+    let showLine = true;
 
     // if there's only one point, add previous day 0
     if (data.length === 1) {
+      showLine = false;
       const singleDataPoint = data[0];
       const bufferBefore = {
         x: singleDataPoint.x - 86400000,
       };
+      const bufferAfter = {
+        x: singleDataPoint.x + 86400000,
+      };
 
       data.unshift(bufferBefore);
+      data.push(bufferAfter);
     }
+
+    const context = element.getContext("2d");
 
     const xMin = Math.min(...data.map((item) => item.x));
     const xMax = Math.max(...data.map((item) => item.x));
@@ -56,21 +82,27 @@ export default class TopicViewsChart extends Component {
 
     const topicMapElement = document.querySelector(".revamped-topic-map");
 
-    const barColor =
-      getComputedStyle(topicMapElement).getPropertyValue("--chart-bar-color");
+    const lineColor =
+      getComputedStyle(topicMapElement).getPropertyValue("--chart-line-color");
+    const pointColor = getComputedStyle(topicMapElement).getPropertyValue(
+      "--chart-point-color"
+    );
 
     if (this.chart) {
       this.chart.destroy();
     }
 
     this.chart = new window.Chart(context, {
-      type: "bar",
+      type: "line",
       data: {
         datasets: [
           {
             label: "Views",
             data,
-            backgroundColor: barColor,
+            showLine,
+            borderColor: pointColor,
+            backgroundColor: lineColor,
+            pointBackgroundColor: pointColor,
           },
         ],
       },
@@ -82,8 +114,9 @@ export default class TopicViewsChart extends Component {
             min: xMin,
             max: xMax,
             ticks: {
-              autoSkip: true,
-              maxTicksLimit: data.length,
+              autoSkip: false,
+              stepSize: 86400000,
+              maxTicksLimit: 15,
               callback: function (value) {
                 const date = new Date(value);
                 return date.toLocaleDateString(undefined, {

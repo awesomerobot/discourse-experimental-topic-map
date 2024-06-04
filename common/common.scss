@@ -12,7 +12,9 @@ body:not(.archetype-private_message) {
   }
 
   .revamped-topic-map {
-    --chart-bar-color: var(--tertiary);
+    --chart-line-color: var(--tertiary);
+    --chart-point-color: var(--tertiary-medium);
+
     max-width: calc(
       var(--topic-avatar-width) + var(--topic-body-width) +
         (var(--topic-body-width-padding) * 2)
@@ -46,6 +48,7 @@ body:not(.archetype-private_message) {
       .map {
         li {
           padding: 0;
+          width: 100%;
           float: none;
         }
         .d-icon {
@@ -491,7 +494,18 @@ body:not(.archetype-private_message) {
 
       h3 {
         width: 100%;
+        font-weight: bold;
+        font-size: var(--font-up-2);
       }
     }
+  }
+}
+
+.map-links-content {
+  table {
+    width: 100%;
+  }
+  td {
+    padding: 0.5em 0;
   }
 }
