@@ -1,9 +1,12 @@
 import Component from "@glimmer/component";
-import { tracked } from "@glimmer/tracking";
 import { action } from "@ember/object";
 import didInsert from "@ember/render-modifiers/modifiers/did-insert";
 import loadScript from "discourse/lib/load-script";
 import i18n from "discourse-common/helpers/i18n";
+
+const now = new Date();
+const startOfDay = new Date(now.setHours(0, 0, 0, 0)).getTime();
+const oneDay = 86400000;
 
 function calculateAdjustedStepSize(data) {
   const range =
@@ -21,7 +24,6 @@ function calculateAdjustedStepSize(data) {
 
 function fillMissingDates(data) {
   const filledData = [];
-  const oneDay = 86400000;
   let currentDate = new Date(data[0].x);
 
   for (let i = 0; i < data.length; i++) {
@@ -36,9 +38,22 @@ function fillMissingDates(data) {
   return filledData;
 }
 
+function predictTodaysViews(data) {
+  const totalViews = data.reduce((acc, item) => acc + item.y, 0);
+  const averageViews = totalViews / data.length;
+  const elapsedTime = (Date.now() - startOfDay) / oneDay;
+  const currentViews = data[data.length - 1].y; // partial data for today
+
+  const predictedViews = Math.round(
+    currentViews + averageViews * (1 - elapsedTime)
+  );
+
+  return Math.max(predictedViews, currentViews); // never lower than actual data
+}
+
 export default class TopicViewsChart extends Component {
-  @tracked chart = null;
-  @tracked noData = false;
+  chart = null;
+  noData = false;
 
   @action
   async renderChart(element) {
@@ -55,37 +70,37 @@ export default class TopicViewsChart extends Component {
 
     data = fillMissingDates(data);
 
+    const todayData = data.find((item) => item.x === startOfDay);
+    const currentViews = todayData ? todayData.y : 0;
+    // remove current day's actual point, we'll replace with prediction
+    data = data.filter((item) => item.x !== startOfDay);
+    const today = new Date().setHours(0, 0, 0, 0);
+
+    const predictedViews = predictTodaysViews(data);
+    const predictedDataPoint = {
+      x: now.getTime(),
+      y: Math.max(predictedViews, currentViews),
+    };
+
+    data.push(predictedDataPoint);
+
     let showLine = true;
-
-    // if there's only one point, add previous day 0
-    if (data.length === 1) {
-      showLine = false;
-      const singleDataPoint = data[0];
-      const bufferBefore = {
-        x: singleDataPoint.x - 86400000,
-      };
-      const bufferAfter = {
-        x: singleDataPoint.x + 86400000,
-      };
-
-      data.unshift(bufferBefore);
-      data.push(bufferAfter);
-    }
 
     const context = element.getContext("2d");
 
     const xMin = Math.min(...data.map((item) => item.x));
     const xMax = Math.max(...data.map((item) => item.x));
 
-    const filteredData = data.filter((item) => item.y !== undefined);
-    const yMax = Math.max(...filteredData.map((item) => item.y));
-
     const topicMapElement = document.querySelector(".revamped-topic-map");
 
+    // grab colors from CSS
     const lineColor =
       getComputedStyle(topicMapElement).getPropertyValue("--chart-line-color");
     const pointColor = getComputedStyle(topicMapElement).getPropertyValue(
       "--chart-point-color"
+    );
+    const predictionColor = getComputedStyle(topicMapElement).getPropertyValue(
+      "--chart-prediction-color"
     );
 
     if (this.chart) {
@@ -98,11 +113,20 @@ export default class TopicViewsChart extends Component {
         datasets: [
           {
             label: "Views",
-            data,
+            data: data.slice(0, -1),
             showLine,
             borderColor: pointColor,
             backgroundColor: lineColor,
             pointBackgroundColor: pointColor,
+          },
+          {
+            label: "Predicted Views",
+            data: [data[data.length - 2], predictedDataPoint],
+            showLine: true,
+            borderDash: [5, 5],
+            borderColor: predictionColor,
+            backgroundColor: predictionColor,
+            pointBackgroundColor: predictionColor,
           },
         ],
       },
@@ -128,9 +152,8 @@ export default class TopicViewsChart extends Component {
           },
           y: {
             beginAtZero: true,
-            suggestedMax: yMax,
             ticks: {
-              stepSize: calculateAdjustedStepSize(filteredData),
+              stepSize: calculateAdjustedStepSize(data),
               callback: function (value) {
                 return value;
               },
@@ -152,8 +175,27 @@ export default class TopicViewsChart extends Component {
                 });
               },
               label: function (tooltipItem) {
-                return `Views: ${tooltipItem?.parsed?.y}`;
+                if (tooltipItem.datasetIndex === 1 && startOfDay === today) {
+                  return `Predicted Views: ${tooltipItem?.parsed?.y}`;
+                } else if (tooltipItem.datasetIndex === 0) {
+                  return `Views: ${tooltipItem?.parsed?.y}`;
+                }
+                return null;
               },
+            },
+            filter: function (tooltipItem) {
+              const date = new Date(tooltipItem?.parsed?.x).setHours(
+                0,
+                0,
+                0,
+                0
+              );
+
+              // show predicted data point only for today, not past
+              return (
+                tooltipItem.datasetIndex === 0 ||
+                (tooltipItem.datasetIndex === 1 && date === today)
+              );
             },
           },
         },
@@ -163,7 +205,7 @@ export default class TopicViewsChart extends Component {
 
   <template>
     {{#if this.noData}}
-      {{i18n (themePrefix "no_views")}}
+      {{i18n (themePrefix "chart_error")}}
     {{else}}
       <canvas {{didInsert this.renderChart}}></canvas>
       <div class="view-explainer">{{i18n (themePrefix "view_explainer")}}</div>
