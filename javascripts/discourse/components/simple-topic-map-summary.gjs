@@ -23,6 +23,7 @@ import DMenu from "float-kit/components/d-menu";
 import and from "truth-helpers/helpers/and";
 import lt from "truth-helpers/helpers/lt";
 import not from "truth-helpers/helpers/not";
+import SimpleViewCounts from "../components/simple-view-counts";
 import TopicViewsChart from "../components/topic-views-chart";
 
 const TRUNCATED_LINKS_LIMIT = 5;
@@ -245,13 +246,17 @@ export default class SimpleTopicMapSummary extends Component {
             }}</span>
         </:trigger>
         <:content>
-          <section class="views" {{didInsert this.fetchViews}}>
+          <section class="views topic-map-views" {{didInsert this.fetchViews}}>
             <h3>{{i18n (themePrefix "menu_titles.views")}}</h3>
             <ConditionalLoadingSpinner @condition={{this.loading}}>
-              <TopicViewsChart
-                @views={{this.views}}
-                @created={{@topic.created_at}}
-              />
+              {{#if (gt this.views.stats.length 2)}}
+                <TopicViewsChart
+                  @views={{this.views}}
+                  @created={{@topic.created_at}}
+                />
+              {{else}}
+                <SimpleViewCounts @views={{this.views}} />
+              {{/if}}
             </ConditionalLoadingSpinner>
           </section>
         </:content>
