@@ -1,30 +1,49 @@
 import Component from "@glimmer/component";
-import { eq } from "truth-helpers";
-import i18n from "discourse-common/helpers/i18n";
 
 export default class SimpleViewCounts extends Component {
-  get updatedStats() {
-    let stats = this.args.views.stats.map((stat, index, array) => {
-      let label = null;
+  adjustAggregatedData(stats) {
+    const adjustedStats = [];
 
-      const today = new Date().setHours(0, 0, 0, 0);
-      const yesterday = new Date(today - 86400000).setHours(0, 0, 0, 0);
-      const statDate = new Date(`${stat.viewed_at}T00:00:00`).setHours(
-        0,
-        0,
-        0,
-        0
+    stats.forEach((stat) => {
+      const localDate = new Date(`${stat.viewed_at}T00:00:00Z`);
+      const localDateStr = localDate.toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      });
+
+      const existingStat = adjustedStats.find(
+        (s) => s.dateStr === localDateStr
       );
 
-      if (array.length === 1 || statDate === today) {
-        label = "today";
-      } else if (statDate === yesterday) {
-        label = "yesterday";
+      if (existingStat) {
+        existingStat.views += stat.views;
+      } else {
+        adjustedStats.push({
+          dateStr: localDateStr,
+          views: stat.views,
+          localDate,
+        });
       }
+    });
+
+    return adjustedStats.map((stat) => ({
+      viewed_at: stat.localDate.toISOString().split("T")[0],
+      views: stat.views,
+    }));
+  }
+
+  get updatedStats() {
+    const adjustedStats = this.adjustAggregatedData(this.args.views.stats);
+
+    let stats = adjustedStats.map((stat) => {
+      const statDate = new Date(`${stat.viewed_at}T00:00:00`).getTime();
+      const localStatDate = new Date(statDate);
 
       return {
         ...stat,
-        label: label || this.formatDate(stat.viewed_at),
+        statDate: localStatDate,
+        label: this.formatDate(localStatDate),
       };
     });
 
@@ -32,8 +51,7 @@ export default class SimpleViewCounts extends Component {
   }
 
   formatDate(date) {
-    const day = new Date(date);
-    return day.toLocaleDateString(undefined, {
+    return date.toLocaleDateString(undefined, {
       month: "2-digit",
       day: "2-digit",
     });
@@ -47,16 +65,7 @@ export default class SimpleViewCounts extends Component {
             {{stat.views}}
           </div>
           <div class="simple-view-count__date">
-            {{#if (eq stat.label "today")}}
-              {{i18n (themePrefix "today")}}
-              <span class="simple-view-count__so-far">
-                {{i18n (themePrefix "so_far")}}
-              </span>
-            {{else if (eq stat.label "yesterday")}}
-              {{i18n (themePrefix "yesterday")}}
-            {{else}}
-              {{stat.label}}
-            {{/if}}
+            {{stat.label}}
           </div>
         </div>
       {{/each}}

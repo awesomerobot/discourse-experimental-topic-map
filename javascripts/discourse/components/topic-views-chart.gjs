@@ -4,51 +4,70 @@ import didInsert from "@ember/render-modifiers/modifiers/did-insert";
 import loadScript from "discourse/lib/load-script";
 import i18n from "discourse-common/helpers/i18n";
 
+const oneDay = 86400000; // day in milliseconds
+
 const now = new Date();
-const startOfDay = new Date(now.setHours(0, 0, 0, 0)).getTime();
-const oneDay = 86400000;
-
-function calculateAdjustedStepSize(data) {
-  const range =
-    Math.max(...data.map((item) => item.y)) -
-    Math.min(...data.map((item) => item.y));
-
-  if (range < 5) {
-    return 1;
-  }
-
-  const stepSize = range / 5;
-  const magnitude = Math.pow(10, Math.floor(Math.log10(stepSize)));
-  return Math.ceil(stepSize / magnitude) * magnitude;
-}
+const startOfDay = Date.UTC(
+  now.getUTCFullYear(),
+  now.getUTCMonth(),
+  now.getUTCDate()
+);
 
 function fillMissingDates(data) {
   const filledData = [];
-  let currentDate = new Date(data[0].x);
+  let currentDate = data[0].x;
 
   for (let i = 0; i < data.length; i++) {
-    while (currentDate.getTime() < data[i].x) {
-      filledData.push({ x: currentDate.getTime(), y: 0 });
-      currentDate = new Date(currentDate.getTime() + oneDay);
+    while (currentDate < data[i].x) {
+      filledData.push({ x: currentDate, y: 0 });
+      currentDate += oneDay;
     }
     filledData.push(data[i]);
-    currentDate = new Date(currentDate.getTime() + oneDay);
+    currentDate = data[i].x + oneDay;
   }
 
   return filledData;
 }
 
+function weightedMovingAverage(data, period = 3) {
+  const weights = Array.from({ length: period }, (_, i) => i + 1);
+  const weightSum = weights.reduce((a, b) => a + b, 0);
+  let result = [];
+
+  for (let i = 0; i < data.length; i++) {
+    if (i < period - 1) {
+      result.push(null);
+      continue;
+    }
+
+    let weightedSum = 0;
+    for (let j = 0; j < period; j++) {
+      weightedSum += data[i - j].y * weights[j];
+    }
+
+    result.push(Math.round(weightedSum / weightSum));
+  }
+
+  return result;
+}
+
 function predictTodaysViews(data) {
-  const totalViews = data.reduce((acc, item) => acc + item.y, 0);
-  const averageViews = totalViews / data.length;
-  const elapsedTime = (Date.now() - startOfDay) / oneDay;
-  const currentViews = data[data.length - 1].y; // partial data for today
+  const movingAvg = weightedMovingAverage(data);
+  const lastMovingAvg = movingAvg[movingAvg.length - 1];
+  const currentViews = data[data.length - 1].y;
+  const currentTimeUTC = Date.now() + now.getTimezoneOffset() * 60 * 1000;
+  const elapsedTime = (currentTimeUTC - startOfDay) / oneDay; // amount of day passed
+  let adjustedPrediction = lastMovingAvg;
 
-  const predictedViews = Math.round(
-    currentViews + averageViews * (1 - elapsedTime)
-  );
-
-  return Math.max(predictedViews, currentViews); // never lower than actual data
+  if (currentViews >= lastMovingAvg) {
+    // If higher than the average prediction, extrapolate
+    adjustedPrediction =
+      currentViews + (currentViews - lastMovingAvg) * (1 - elapsedTime);
+  } else {
+    // If views are lower than the average, adjust towards average
+    adjustedPrediction = currentViews + lastMovingAvg * (1 - elapsedTime);
+  }
+  return Math.round(Math.max(adjustedPrediction, currentViews)); // never lower than actual data
 }
 
 export default class TopicViewsChart extends Component {
@@ -60,36 +79,34 @@ export default class TopicViewsChart extends Component {
     await loadScript("/javascripts/Chart.min.js");
 
     if (!this.args.views?.stats || this.args.views?.stats?.length === 0) {
-      return (this.noData = true);
+      this.noData = true;
+      return;
     }
 
     let data = this.args.views.stats.map((item) => ({
-      x: new Date(`${item.viewed_at}T00:00:00`).getTime(),
+      x: new Date(`${item.viewed_at}T00:00:00Z`).getTime(), // Use UTC time
       y: item.views,
     }));
 
     data = fillMissingDates(data);
 
-    const todayData = data.find((item) => item.x === startOfDay);
-    const currentViews = todayData ? todayData.y : 0;
-    // remove current day's actual point, we'll replace with prediction
-    data = data.filter((item) => item.x !== startOfDay);
-    const today = new Date().setHours(0, 0, 0, 0);
+    const lastDay = data[data.length - 1];
 
     const predictedViews = predictTodaysViews(data);
     const predictedDataPoint = {
-      x: now.getTime(),
-      y: Math.max(predictedViews, currentViews),
+      x: lastDay.x,
+      y: predictedViews,
     };
 
+    // remove current day's actual point, we'll replace with prediction
+    data = data.slice(0, data.length - 1);
+    // Add predicted data point
     data.push(predictedDataPoint);
-
-    let showLine = true;
 
     const context = element.getContext("2d");
 
-    const xMin = Math.min(...data.map((item) => item.x));
-    const xMax = Math.max(...data.map((item) => item.x));
+    const xMin = data[0].x;
+    const xMax = lastDay.x;
 
     const topicMapElement = document.querySelector(".revamped-topic-map");
 
@@ -114,14 +131,14 @@ export default class TopicViewsChart extends Component {
           {
             label: "Views",
             data: data.slice(0, -1),
-            showLine,
+            showLine: true,
             borderColor: pointColor,
             backgroundColor: lineColor,
             pointBackgroundColor: pointColor,
           },
           {
             label: "Predicted Views",
-            data: [data[data.length - 2], predictedDataPoint],
+            data: [data[data.length - 2], data[data.length - 1]],
             showLine: true,
             borderDash: [5, 5],
             borderColor: predictionColor,
@@ -139,10 +156,10 @@ export default class TopicViewsChart extends Component {
             max: xMax,
             ticks: {
               autoSkip: false,
-              stepSize: 86400000,
+              stepSize: oneDay,
               maxTicksLimit: 15,
               callback: function (value) {
-                const date = new Date(value);
+                const date = new Date(value + oneDay);
                 return date.toLocaleDateString(undefined, {
                   month: "2-digit",
                   day: "2-digit",
@@ -153,7 +170,6 @@ export default class TopicViewsChart extends Component {
           y: {
             beginAtZero: true,
             ticks: {
-              stepSize: calculateAdjustedStepSize(data),
               callback: function (value) {
                 return value;
               },
@@ -167,7 +183,11 @@ export default class TopicViewsChart extends Component {
           tooltip: {
             callbacks: {
               title: function (tooltipItem) {
-                const date = new Date(tooltipItem[0]?.parsed?.x);
+                let date = new Date(tooltipItem[0]?.parsed?.x + oneDay);
+                if (tooltipItem.length === 0) {
+                  const today = new Date();
+                  date = today.getUTCDate();
+                }
                 return date.toLocaleDateString(undefined, {
                   month: "2-digit",
                   day: "2-digit",
@@ -175,26 +195,18 @@ export default class TopicViewsChart extends Component {
                 });
               },
               label: function (tooltipItem) {
-                if (tooltipItem.datasetIndex === 1 && startOfDay === today) {
-                  return `Predicted Views: ${tooltipItem?.parsed?.y}`;
-                } else if (tooltipItem.datasetIndex === 0) {
-                  return `Views: ${tooltipItem?.parsed?.y}`;
-                }
-                return null;
+                const label =
+                  tooltipItem?.parsed?.x === startOfDay
+                    ? "Predicted Views"
+                    : "Views";
+
+                return `${label}: ${tooltipItem?.parsed?.y}`;
               },
             },
             filter: function (tooltipItem) {
-              const date = new Date(tooltipItem?.parsed?.x).setHours(
-                0,
-                0,
-                0,
-                0
-              );
-
-              // show predicted data point only for today, not past
-              return (
-                tooltipItem.datasetIndex === 0 ||
-                (tooltipItem.datasetIndex === 1 && date === today)
+              return !(
+                tooltipItem?.parsed?.x === startOfDay - oneDay &&
+                tooltipItem?.datasetIndex === 1
               );
             },
           },
