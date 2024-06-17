@@ -3,7 +3,7 @@ import { tracked } from "@glimmer/tracking";
 import { hash } from "@ember/helper";
 import { action } from "@ember/object";
 import didInsert from "@ember/render-modifiers/modifiers/did-insert";
-import { inject as service } from "@ember/service";
+import { service } from "@ember/service";
 import { htmlSafe } from "@ember/template";
 import { gt } from "truth-helpers";
 import AiSummarySkeleton from "discourse/components/ai-summary-skeleton";
@@ -194,6 +194,7 @@ export default class SimpleTopicMapSummary extends Component {
   fetchViews() {
     const cacheKey = `topicViews_${this.args.topic.id}`;
     const cachedData = this.mapCache.get(cacheKey);
+    this.loading = true;
 
     if (cachedData) {
       this.views = cachedData;
@@ -237,6 +238,7 @@ export default class SimpleTopicMapSummary extends Component {
         @placement="right"
         @groupIdentifier="topic-map"
         @inline={{true}}
+        @onShow={{this.fetchViews}}
       >
         <:trigger>
           {{number @topic.views noTitle="true"}}
@@ -246,7 +248,7 @@ export default class SimpleTopicMapSummary extends Component {
             }}</span>
         </:trigger>
         <:content>
-          <section class="views topic-map-views" {{didInsert this.fetchViews}}>
+          <section class="views topic-map-views">
             <h3>{{i18n (themePrefix "menu_titles.views")}}</h3>
             <ConditionalLoadingSpinner @condition={{this.loading}}>
               {{#if (gt this.views.stats.length 2)}}
